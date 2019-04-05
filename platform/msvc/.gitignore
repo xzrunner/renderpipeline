@@ -1,0 +1,5 @@
+renderpipeline/
+projects/*
+
+!projects/renderpipeline.vcxproj
+!projects/renderpipeline.vcxproj.filters

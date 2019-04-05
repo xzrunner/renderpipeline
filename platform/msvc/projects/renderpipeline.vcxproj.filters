@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\Callback.cpp" />
+    <ClCompile Include="..\..\..\source\RenderMgr.cpp" />
+    <ClCompile Include="..\..\..\source\ExternRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\SpriteRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\VolumeRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\MeshRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Shape3Renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\SkinRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\BSPRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\MorphRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\SkyboxRenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp">
+      <Filter>pass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp">
+      <Filter>pass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CubemapHelper.cpp">
+      <Filter>pass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreatePrefilterCubemap.cpp">
+      <Filter>pass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp">
+      <Filter>pass</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RenderMgr.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\ExternRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\SpriteRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\VolumeRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\IRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RendererImpl.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RenderBuffer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\UniformNames.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\MeshRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\Shape3Renderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\SkinRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\BSPRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\MorphRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\SkyboxRenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h">
+      <Filter>pass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h">
+      <Filter>pass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h">
+      <Filter>pass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreatePrefilterCubemap.h">
+      <Filter>pass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h">
+      <Filter>pass</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{e773b86a-1167-46e9-9d8d-1f798fba8ae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pass">
+      <UniqueIdentifier>{8aca6f80-6321-4387-ba1e-392de8371fa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader">
+      <UniqueIdentifier>{2af1de1b-376f-4ce3-bcd8-23bef7359803}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\renderpipeline\RendererImpl.inl" />
+    <None Include="..\..\..\shader\cubemap.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\..\shader\equirectangular_to_cubemap.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\..\shader\irradiance_convolution.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\..\shader\prefilter.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\..\shader\brdf.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\..\shader\brdf.frag">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

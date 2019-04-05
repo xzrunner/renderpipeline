@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\renderpipeline\BSPRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\CreatePrefilterCubemap.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\SkyboxRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\MeshRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\MorphRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RendererImpl.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\ExternRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\IRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\Shape3Renderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RenderBuffer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\RenderMgr.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\SkinRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\SpriteRenderer.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\UniformNames.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\VolumeRenderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\BSPRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\Callback.cpp" />
+    <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp" />
+    <ClCompile Include="..\..\..\source\CreatePrefilterCubemap.cpp" />
+    <ClCompile Include="..\..\..\source\CubemapHelper.cpp" />
+    <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp" />
+    <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp" />
+    <ClCompile Include="..\..\..\source\SkyboxRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\ExternRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\MeshRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\MorphRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\Shape3Renderer.cpp" />
+    <ClCompile Include="..\..\..\source\RenderMgr.cpp" />
+    <ClCompile Include="..\..\..\source\SkinRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\SpriteRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\VolumeRenderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\renderpipeline\RendererImpl.inl" />
+    <None Include="..\..\..\shader\brdf.frag" />
+    <None Include="..\..\..\shader\brdf.vert" />
+    <None Include="..\..\..\shader\cubemap.vert" />
+    <None Include="..\..\..\shader\equirectangular_to_cubemap.frag" />
+    <None Include="..\..\..\shader\irradiance_convolution.frag" />
+    <None Include="..\..\..\shader\prefilter.frag" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>4.renderpipeline</ProjectName>
+    <ProjectGuid>{1CBD9E7E-98C6-4D18-AC91-7683C4AB23FC}</ProjectGuid>
+    <RootNamespace>renderpipeline</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>15.0.26730.12</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\renderpipeline\x86\Debug\</OutDir>
+    <IntDir>..\renderpipeline\x86\Debug\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\renderpipeline\x86\Release\</OutDir>
+    <IntDir>..\renderpipeline\x86\Release\obj\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..;..\..\..\include;..\..\..\include\renderpipeline;..\..\..\..\ds\src\ds;..\..\..\..\unirender\include;..\..\..\..\memmgr\include;..\..\..\..\cooking\include;..\..\..\..\ds\src\ds;..\..\..\..\cu\src;..\..\..\..\sm\src\sm;..\..\..\..\guard\include;..\..\..\..\cpputil\include;..\..\..\..\tessellation\include;..\..\..\..\model\include;..\..\..\..\painting0\include;..\..\..\..\painting2\include;..\..\..\..\painting3\include;..\..\..\..\shaderweaver\include;..\..\..\..\external\c99;..\..\..\..\external\boost\include;..\..\..\..\external\rttr\include;..\..\..\..\external\glm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;EASY_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\..;..\..\..\include;..\..\..\include\renderpipeline;..\..\..\..\ds\src\ds;..\..\..\..\unirender\include;..\..\..\..\memmgr\include;..\..\..\..\cooking\include;..\..\..\..\ds\src\ds;..\..\..\..\cu\src;..\..\..\..\sm\src\sm;..\..\..\..\guard\include;..\..\..\..\cpputil\include;..\..\..\..\tessellation\include;..\..\..\..\model\include;..\..\..\..\painting0\include;..\..\..\..\painting2\include;..\..\..\..\painting3\include;..\..\..\..\shaderweaver\include;..\..\..\..\external\c99;..\..\..\..\external\boost\include;..\..\..\..\external\rttr\include;..\..\..\..\external\glm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;EASY_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
