@@ -80,6 +80,11 @@ std::shared_ptr<IRenderer> RenderMgr::SetRenderer(RenderType type)
 	return m_renderers[static_cast<int>(m_curr_render)];
 }
 
+std::shared_ptr<IRenderer> RenderMgr::GetRenderer(RenderType type)
+{
+    return m_renderers[static_cast<int>(type)];
+}
+
 void RenderMgr::BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
 {
     for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
@@ -107,6 +112,38 @@ void RenderMgr::BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
         for (auto& shader : rd->GetAllShaders()) {
             if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
                 std::static_pointer_cast<pt3::Shader>(shader)->AddNotify(wc);
+            }
+        }
+    }
+}
+
+void RenderMgr::UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
+{
+    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+    {
+        auto& rd = m_renderers[i];
+        if (!rd) {
+            continue;
+        }
+        for (auto& shader : rd->GetAllShaders()) {
+            if (shader->get_type() == rttr::type::get<pt2::Shader>()) {
+                std::static_pointer_cast<pt2::Shader>(shader)->RemoveNotify(wc);
+            }
+        }
+    }
+}
+
+void RenderMgr::UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
+{
+    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+    {
+        auto& rd = m_renderers[i];
+        if (!rd) {
+            continue;
+        }
+        for (auto& shader : rd->GetAllShaders()) {
+            if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
+                std::static_pointer_cast<pt3::Shader>(shader)->RemoveNotify(wc);
             }
         }
     }

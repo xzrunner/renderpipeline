@@ -34,9 +34,12 @@ class RenderMgr
 {
 public:
 	std::shared_ptr<IRenderer> SetRenderer(RenderType type);
+    std::shared_ptr<IRenderer> GetRenderer(RenderType type);
 
     void BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
     void BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
+    void UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
+    void UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
 
 	void Flush();
 
