@@ -155,9 +155,9 @@ void VolumeRenderer::PrepareRenderState()
 	// enable alpha test
 	rc.SetAlphaTest(ur::ALPHA_GREATER, 0.05f);
 	// disable depth test
-	rc.SetDepthTest(ur::DEPTH_DISABLE);
+	rc.SetZTest(ur::DEPTH_DISABLE);
 	// disable face cull
-	rc.SetCull(ur::CULL_DISABLE);
+	rc.SetCullMode(ur::CULL_DISABLE);
 }
 
 void VolumeRenderer::RestoreRenderState()
@@ -169,11 +169,11 @@ void VolumeRenderer::RestoreRenderState()
 	// disable alpha test
 	rc.SetAlphaTest(ur::ALPHA_DISABLE);
 	// enable depth test
-	rc.SetDepthTest(ur::DEPTH_LESS_EQUAL);
-	rc.EnableDepthMask(true);
+	rc.SetZTest(ur::DEPTH_LESS_EQUAL);
+	rc.SetZWrite(true);
 	// enable face cull
 	rc.SetFrontFace(true);
-	rc.SetCull(ur::CULL_BACK);
+	rc.SetCullMode(ur::CULL_BACK);
 }
 
 }
