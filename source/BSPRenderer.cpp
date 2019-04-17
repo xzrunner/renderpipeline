@@ -128,10 +128,10 @@ void BSPRenderer::InitShader()
 	sp.vs = vert.GenShaderStr().c_str();
 	sp.fs = frag.GenShaderStr().c_str();
 
-	sp.uniform_names[pt0::U_MODEL_MAT] = MODEL_MAT_NAME;
-	sp.uniform_names[pt0::U_VIEW_MAT]  = VIEW_MAT_NAME;
-	sp.uniform_names[pt0::U_PROJ_MAT]  = PROJ_MAT_NAME;
-    sp.uniform_names[pt0::U_CAM_POS]   = sw::node::CameraPos::CamPosName();
+	sp.uniform_names.Add(pt0::U_MODEL_MAT, MODEL_MAT_NAME);
+	sp.uniform_names.Add(pt0::U_VIEW_MAT,  VIEW_MAT_NAME);
+	sp.uniform_names.Add(pt0::U_PROJ_MAT,  PROJ_MAT_NAME);
+    sp.uniform_names.Add(pt0::U_CAM_POS,   sw::node::CameraPos::CamPosName());
 
     m_shaders.push_back(std::make_shared<pt3::Shader>(&rc, sp));
 }
