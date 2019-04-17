@@ -29,7 +29,7 @@ public:
     virtual void Flush() override;
 
     void Draw(const model::MeshGeometry& mesh, const pt0::Material& material,
-        const pt0::RenderContext& ctx, const std::shared_ptr<pt0::Shader>& shader = nullptr) const;
+        const pt0::RenderContext& ctx, const std::shared_ptr<ur::Shader>& shader = nullptr) const;
 
 private:
     void InitShader();

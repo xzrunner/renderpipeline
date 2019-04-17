@@ -39,7 +39,7 @@ void MeshRenderer::Flush()
 void MeshRenderer::Draw(const model::MeshGeometry& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx,
-                        const std::shared_ptr<pt0::Shader>& shader) const
+                        const std::shared_ptr<ur::Shader>& shader) const
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
