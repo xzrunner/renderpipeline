@@ -224,9 +224,9 @@ void SpriteRenderer::InitShader()
 	sp.vs = vert.GenShaderStr().c_str();
 	sp.fs = frag.GenShaderStr().c_str();
 
-	sp.uniform_names.Add(pt0::U_MODEL_MAT, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::U_VIEW_MAT,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::U_PROJ_MAT,  PROJ_MAT_NAME);
+	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
+	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
+	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
 
     m_shaders.push_back(std::make_shared<pt2::Shader>(&rc, sp));
 }
