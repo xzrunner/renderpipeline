@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\SeparableSSS.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\SkyboxRenderer.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\MeshRenderer.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\MorphRenderer.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="..\..\..\source\CubemapHelper.cpp" />
     <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp" />
     <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp" />
+    <ClCompile Include="..\..\..\source\SeparableSSS.cpp" />
     <ClCompile Include="..\..\..\source\SkyboxRenderer.cpp" />
     <ClCompile Include="..\..\..\source\ExternRenderer.cpp" />
     <ClCompile Include="..\..\..\source\MeshRenderer.cpp" />

@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp">
       <Filter>pass</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\SeparableSSS.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
@@ -95,6 +98,9 @@
     <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h">
       <Filter>pass</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\SeparableSSS.h">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="renderer">
@@ -105,6 +111,9 @@
     </Filter>
     <Filter Include="shader">
       <UniqueIdentifier>{2af1de1b-376f-4ce3-bcd8-23bef7359803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="feature">
+      <UniqueIdentifier>{013cf4b9-ba57-4d7b-9e2d-f637be810f16}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
