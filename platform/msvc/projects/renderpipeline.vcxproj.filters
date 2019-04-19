@@ -48,6 +48,8 @@
     <ClCompile Include="..\..\..\source\SeparableSSS.cpp">
       <Filter>feature</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\RegistRTTR.cpp" />
+    <ClCompile Include="..\..\..\source\RenderPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
@@ -101,6 +103,7 @@
     <ClInclude Include="..\..\..\include\renderpipeline\SeparableSSS.h">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\RenderPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="renderer">

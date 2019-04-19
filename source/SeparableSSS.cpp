@@ -2,6 +2,18 @@
 
 namespace rp
 {
+namespace node
+{
+
+void SeparableSSS::Eval(const rg::RenderContext& rc, size_t port_idx,
+                        rg::ShaderVariant& var, uint32_t& flags) const
+{
+    if (m_kernel.empty()) {
+        CalculateKernel(m_kernel, m_samples_num, m_strength, m_falloff);
+    }
+    var.type = rg::VariableType::Vec4Array;
+    var.vec4_array = m_kernel;
+}
 
 void SeparableSSS::CalculateKernel(std::vector<sm::vec4>& kernel, int samples_num,
                                    const sm::vec3& strength, const sm::vec3& falloff)
@@ -98,4 +110,5 @@ sm::vec3 SeparableSSS::Gaussian(float variance, float r, const sm::vec3& falloff
     return g;
 }
 
+}
 }
