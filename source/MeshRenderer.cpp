@@ -182,7 +182,7 @@ void MeshRenderer::InitShader()
 
     auto frag_end = std::make_shared<sw::node::FragmentShader>();
     std::vector<sw::NodePtr> cache_nodes;
-    if (true/*tex_map*/)
+    if (false/*tex_map*/)
     {
         // frag_color = phong * texture2D(u_texture0, v_texcoord);
         auto tex_sample  = std::make_shared<sw::node::SampleTex2D>();
