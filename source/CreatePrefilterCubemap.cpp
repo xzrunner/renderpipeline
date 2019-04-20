@@ -54,7 +54,7 @@ unsigned int CreatePrefilterCubemap(unsigned int cubemap)
         {
             shader->SetMat4("view", &capture_views[i][0][0]);
 
-            rc.BindRenderTargetTex(prefilter_map, ur::ATTACHMENT_COLOR0, ur::TEXTURE_CUBE0 + i, mip);
+            rc.BindRenderTargetTex(prefilter_map, ur::ATTACHMENT_COLOR0, static_cast<ur::TEXTURE_TARGET>(ur::TEXTURE_CUBE0 + i), mip);
             rc.SetClearFlag(ur::MASKC | ur::MASKD);
             rc.SetClearColor(0x88888888);
             rc.Clear();
