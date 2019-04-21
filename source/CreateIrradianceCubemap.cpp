@@ -1,5 +1,6 @@
 #include "renderpipeline/CreateIrradianceCubemap.h"
 #include "renderpipeline/CubemapHelper.h"
+#include "renderpipeline/RenderMgr.h"
 
 #include "shader/cubemap.vert"
 #include "shader/irradiance_convolution.frag"
@@ -7,6 +8,7 @@
 #include <unirender/Blackboard.h>
 #include <unirender/RenderContext.h>
 #include <unirender/Shader.h>
+#include <unirender/Sandbox.h>
 
 namespace rp
 {
@@ -16,15 +18,20 @@ unsigned int CreateIrradianceCubemap(unsigned int cubemap)
     unsigned int irr_cubemap = 0;
 
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+    ur::Sandbox sb(rc);
+
     irr_cubemap = rc.CreateTextureCube(32, 32);
 
     //// todo
     //glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
 
+    RenderMgr::Instance()->SetRenderer(RenderType::EXTERN);
+
     std::vector<std::string> textures;
     CU_VEC<ur::VertexAttrib> va_list;
     auto shader = std::make_shared<ur::Shader>(&rc, cubemap_vs, irradiance_convolution_fs, textures, va_list, true);
+
     shader->Use();
 
     shader->SetInt("environmentMap", 0);

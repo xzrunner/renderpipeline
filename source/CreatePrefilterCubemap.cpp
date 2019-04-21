@@ -1,5 +1,6 @@
 #include "renderpipeline/CreatePrefilterCubemap.h"
 #include "renderpipeline/CubemapHelper.h"
+#include "renderpipeline/RenderMgr.h"
 
 #include "shader/cubemap.vert"
 #include "shader/prefilter.frag"
@@ -7,6 +8,7 @@
 #include <unirender/Blackboard.h>
 #include <unirender/RenderContext.h>
 #include <unirender/Shader.h>
+#include <unirender/Sandbox.h>
 
 namespace rp
 {
@@ -18,11 +20,15 @@ unsigned int CreatePrefilterCubemap(unsigned int cubemap)
     const unsigned int MAX_MIP_LEVELS = 5;
 
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+    ur::Sandbox sb(rc);
+
     prefilter_map = rc.CreateTextureCube(128, 128, MAX_MIP_LEVELS);
 
     //// todo
     //glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+
+    RenderMgr::Instance()->SetRenderer(RenderType::EXTERN);
 
     std::vector<std::string> textures;
     CU_VEC<ur::VertexAttrib> va_list;

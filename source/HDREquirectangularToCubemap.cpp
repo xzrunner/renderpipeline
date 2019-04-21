@@ -1,5 +1,6 @@
 #include "renderpipeline/HDREquirectangularToCubemap.h"
 #include "renderpipeline/CubemapHelper.h"
+#include "renderpipeline/RenderMgr.h"
 
 #include "shader/cubemap.vert"
 #include "shader/equirectangular_to_cubemap.frag"
@@ -7,6 +8,7 @@
 #include <unirender/Blackboard.h>
 #include <unirender/RenderContext.h>
 #include <unirender/Shader.h>
+#include <unirender/Sandbox.h>
 
 namespace rp
 {
@@ -16,11 +18,15 @@ unsigned int HDREquirectangularToCubemap(unsigned int equirectangular_map)
     unsigned int cubemap = 0;
 
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+    ur::Sandbox sb(rc);
+
     cubemap = rc.CreateTextureCube(512, 512);
 
     //// todo
     //glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+
+    RenderMgr::Instance()->SetRenderer(RenderType::EXTERN);
 
     std::vector<std::string> textures;
     CU_VEC<ur::VertexAttrib> va_list;

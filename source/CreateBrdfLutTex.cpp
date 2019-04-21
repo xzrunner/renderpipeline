@@ -1,4 +1,5 @@
 #include "renderpipeline/CreateBrdfLutTex.h"
+#include "renderpipeline/RenderMgr.h"
 
 #include "shader/brdf.vert"
 #include "shader/brdf.frag"
@@ -6,6 +7,7 @@
 #include <unirender/Blackboard.h>
 #include <unirender/RenderContext.h>
 #include <unirender/Shader.h>
+#include <unirender/Sandbox.h>
 
 namespace rp
 {
@@ -15,7 +17,11 @@ unsigned int CreateBrdfLutTex()
     unsigned brdf_lut_tex = 0;
 
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+    ur::Sandbox sb(rc);
+
     brdf_lut_tex = rc.CreateTexture(nullptr, 512, 512, ur::TEXTURE_RG16F);
+
+    RenderMgr::Instance()->SetRenderer(RenderType::EXTERN);
 
     std::vector<std::string> textures;
     CU_VEC<ur::VertexAttrib> va_list;

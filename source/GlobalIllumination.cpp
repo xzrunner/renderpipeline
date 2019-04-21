@@ -1,6 +1,8 @@
 #include "renderpipeline/GlobalIllumination.h"
 #include "renderpipeline/Utility.h"
 
+#include "renderpipeline/HDREquirectangularToCubemap.h"
+
 #include <unirender/Texture.h>
 #include <unirender/TextureCube.h>
 #include <painting3/GlobalIllumination.h>
@@ -32,7 +34,10 @@ void GlobalIllumination::Execute(const rg::RenderContext& rc)
         return;
     }
 
-    InitGIWithSkybox(rc.rc, tex_node->GetTexID(), m_gi);
+    auto img_id = tex_node->GetTexID();
+    auto cube_id = rp::HDREquirectangularToCubemap(img_id);
+//    cube_id = img_id;
+    InitGIWithSkybox(rc.rc, cube_id, m_gi);
 }
 
 void GlobalIllumination::Eval(const rg::RenderContext& rc, size_t port_idx,
