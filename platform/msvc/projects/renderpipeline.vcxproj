@@ -15,6 +15,7 @@
     <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\CreatePrefilterCubemap.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\GlobalIllumination.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\RenderPipeline.h" />
@@ -32,6 +33,7 @@
     <ClInclude Include="..\..\..\include\renderpipeline\SkinRenderer.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\SpriteRenderer.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\UniformNames.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\Utility.h" />
     <ClInclude Include="..\..\..\include\renderpipeline\VolumeRenderer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +42,7 @@
     <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp" />
     <ClCompile Include="..\..\..\source\CreatePrefilterCubemap.cpp" />
     <ClCompile Include="..\..\..\source\CubemapHelper.cpp" />
+    <ClCompile Include="..\..\..\source\GlobalIllumination.cpp" />
     <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp" />
     <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp" />
     <ClCompile Include="..\..\..\source\RegistRTTR.cpp" />
@@ -53,6 +56,7 @@
     <ClCompile Include="..\..\..\source\RenderMgr.cpp" />
     <ClCompile Include="..\..\..\source\SkinRenderer.cpp" />
     <ClCompile Include="..\..\..\source\SpriteRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\Utility.cpp" />
     <ClCompile Include="..\..\..\source\VolumeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>

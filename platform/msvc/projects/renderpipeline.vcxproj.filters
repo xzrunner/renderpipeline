@@ -50,6 +50,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\RegistRTTR.cpp" />
     <ClCompile Include="..\..\..\source\RenderPipeline.cpp" />
+    <ClCompile Include="..\..\..\source\GlobalIllumination.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Utility.cpp">
+      <Filter>tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
@@ -104,6 +110,12 @@
       <Filter>feature</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\renderpipeline\RenderPipeline.h" />
+    <ClInclude Include="..\..\..\include\renderpipeline\GlobalIllumination.h">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\Utility.h">
+      <Filter>tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="renderer">
@@ -117,6 +129,9 @@
     </Filter>
     <Filter Include="feature">
       <UniqueIdentifier>{013cf4b9-ba57-4d7b-9e2d-f637be810f16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools">
+      <UniqueIdentifier>{0ed794c5-c4fb-418d-982d-5e58209277d5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
