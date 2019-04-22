@@ -1,7 +1,7 @@
 static const char* brdf_fs = R"(
 
 #version 330 core
-out vec4 FragColor;
+out vec2 FragColor;
 in vec2 TexCoords;
 
 const float PI = 3.14159265359;
@@ -111,7 +111,7 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
 void main()
 {
     vec2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);
-    FragColor = vec4(integratedBRDF, 0, 1);
+    FragColor = integratedBRDF;
 }
 
 )";
