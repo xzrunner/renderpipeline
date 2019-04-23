@@ -30,21 +30,6 @@
     <ClCompile Include="..\..\..\source\SkyboxRenderer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp">
-      <Filter>pass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp">
-      <Filter>pass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\CubemapHelper.cpp">
-      <Filter>pass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\CreatePrefilterCubemap.cpp">
-      <Filter>pass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp">
-      <Filter>pass</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\SeparableSSS.cpp">
       <Filter>feature</Filter>
     </ClCompile>
@@ -55,6 +40,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\Utility.cpp">
       <Filter>tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreateBrdfLutTex.cpp">
+      <Filter>feature\IBL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreateIrradianceCubemap.cpp">
+      <Filter>feature\IBL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CreatePrefilterCubemap.cpp">
+      <Filter>feature\IBL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\CubemapHelper.cpp">
+      <Filter>feature\IBL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp">
+      <Filter>feature\IBL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,21 +91,6 @@
     <ClInclude Include="..\..\..\include\renderpipeline\SkyboxRenderer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h">
-      <Filter>pass</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h">
-      <Filter>pass</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h">
-      <Filter>pass</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\renderpipeline\CreatePrefilterCubemap.h">
-      <Filter>pass</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h">
-      <Filter>pass</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\renderpipeline\SeparableSSS.h">
       <Filter>feature</Filter>
     </ClInclude>
@@ -116,13 +101,25 @@
     <ClInclude Include="..\..\..\include\renderpipeline\Utility.h">
       <Filter>tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateBrdfLutTex.h">
+      <Filter>feature\IBL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreateIrradianceCubemap.h">
+      <Filter>feature\IBL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CreatePrefilterCubemap.h">
+      <Filter>feature\IBL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\CubemapHelper.h">
+      <Filter>feature\IBL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h">
+      <Filter>feature\IBL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="renderer">
       <UniqueIdentifier>{e773b86a-1167-46e9-9d8d-1f798fba8ae1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="pass">
-      <UniqueIdentifier>{8aca6f80-6321-4387-ba1e-392de8371fa6}</UniqueIdentifier>
     </Filter>
     <Filter Include="shader">
       <UniqueIdentifier>{2af1de1b-376f-4ce3-bcd8-23bef7359803}</UniqueIdentifier>
@@ -133,26 +130,32 @@
     <Filter Include="tools">
       <UniqueIdentifier>{0ed794c5-c4fb-418d-982d-5e58209277d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="feature\IBL">
+      <UniqueIdentifier>{1eb56e2e-6c77-403a-82c3-532c2251f152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\IBL">
+      <UniqueIdentifier>{cc027504-6fd8-4cf7-97ac-d1e0733055bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\renderpipeline\RendererImpl.inl" />
-    <None Include="..\..\..\shader\cubemap.vert">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\..\shader\equirectangular_to_cubemap.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\..\shader\irradiance_convolution.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\..\shader\prefilter.frag">
-      <Filter>shader</Filter>
+    <None Include="..\..\..\shader\brdf.frag">
+      <Filter>shader\IBL</Filter>
     </None>
     <None Include="..\..\..\shader\brdf.vert">
-      <Filter>shader</Filter>
+      <Filter>shader\IBL</Filter>
     </None>
-    <None Include="..\..\..\shader\brdf.frag">
-      <Filter>shader</Filter>
+    <None Include="..\..\..\shader\cubemap.vert">
+      <Filter>shader\IBL</Filter>
+    </None>
+    <None Include="..\..\..\shader\equirectangular_to_cubemap.frag">
+      <Filter>shader\IBL</Filter>
+    </None>
+    <None Include="..\..\..\shader\irradiance_convolution.frag">
+      <Filter>shader\IBL</Filter>
+    </None>
+    <None Include="..\..\..\shader\prefilter.frag">
+      <Filter>shader\IBL</Filter>
     </None>
   </ItemGroup>
 </Project>
