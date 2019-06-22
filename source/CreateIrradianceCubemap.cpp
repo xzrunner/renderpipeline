@@ -56,7 +56,7 @@ unsigned int CreateIrradianceCubemap(unsigned int cubemap)
         rc.SetClearColor(0x88888888);
         rc.Clear();
 
-        rc.RenderCube();
+        rc.RenderCube(ur::RenderContext::VertLayout::VL_POS);
     }
     rc.UnbindRenderTarget();
     rc.ReleaseRenderTarget(rt);

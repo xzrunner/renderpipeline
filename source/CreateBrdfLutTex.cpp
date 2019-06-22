@@ -38,7 +38,7 @@ unsigned int CreateBrdfLutTex()
     rc.SetClearColor(0x88888888);
     rc.Clear();
 
-    rc.RenderQuad();
+    rc.RenderQuad(ur::RenderContext::VertLayout::VL_POS_TEX);
 
     rc.UnbindRenderTarget();
     rc.ReleaseRenderTarget(rt);

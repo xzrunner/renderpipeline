@@ -55,7 +55,7 @@ unsigned int HDREquirectangularToCubemap(unsigned int equirectangular_map)
         rc.SetClearColor(0x88888888);
         rc.Clear();
 
-        rc.RenderCube();
+        rc.RenderCube(ur::RenderContext::VL_POS);
     }
     rc.UnbindRenderTarget();
     rc.ReleaseRenderTarget(rt);
