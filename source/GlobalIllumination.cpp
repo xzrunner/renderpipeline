@@ -43,19 +43,19 @@ void GlobalIllumination::Eval(const rg::RenderContext& rc, size_t port_idx,
     case ID_IRRADIANCE_MAP:
         if (m_gi.irradiance_map) {
             var.type = rg::VariableType::SamplerCube;
-            var.id = m_gi.irradiance_map->GetTexID();
+            var.res_id = m_gi.irradiance_map->GetTexID();
         }
         break;
     case ID_PREFILTER_MAP:
         if (m_gi.prefilter_map) {
             var.type = rg::VariableType::SamplerCube;
-            var.id = m_gi.prefilter_map->GetTexID();
+            var.res_id = m_gi.prefilter_map->GetTexID();
         }
         break;
     case ID_BRDF_LUT:
         if (m_gi.brdf_lut) {
             var.type = rg::VariableType::Sampler2D;
-            var.id = m_gi.brdf_lut->TexID();
+            var.res_id = m_gi.brdf_lut->TexID();
         }
         break;
     }
