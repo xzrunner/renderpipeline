@@ -24,6 +24,17 @@
 #include <painting3/MaterialMgr.h>
 #include <model/MeshGeometry.h>
 
+namespace
+{
+
+enum ShaderType
+{
+    FaceShader = 0,
+    EdgeShader,
+};
+
+}
+
 namespace rp
 {
 
@@ -39,18 +50,20 @@ void MeshRenderer::Flush()
 void MeshRenderer::Draw(const model::MeshGeometry& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx,
-                        const std::shared_ptr<ur::Shader>& shader) const
+                        const std::shared_ptr<ur::Shader>& shader,
+                        bool face) const
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
-    auto sd = shader ? shader : m_shaders[0];
+    auto sd = shader ? shader : (face ? m_shaders[FaceShader] : m_shaders[EdgeShader]);
     sd->Use();
 
     material.Bind(*sd);
     ctx.Bind(*sd);
 
 	auto& geo = mesh;
-	auto mode = sd->GetDrawMode();
+    auto mode = face ? ur::DRAW_TRIANGLES : ur::DRAW_LINES;
+
 	for (auto& sub : geo.sub_geometries)
 	{
 		if (geo.vao > 0)
@@ -79,6 +92,13 @@ void MeshRenderer::Draw(const model::MeshGeometry& mesh,
 }
 
 void MeshRenderer::InitShader()
+{
+    m_shaders.push_back(CreateFaceShader());
+    m_shaders.push_back(CreateEdgeShader());
+}
+
+std::shared_ptr<pt3::Shader>
+MeshRenderer::CreateFaceShader()
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
@@ -230,7 +250,72 @@ void MeshRenderer::InitShader()
 	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
     sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
 
-    m_shaders.push_back(std::make_shared<pt3::Shader>(&rc, sp));
+    return std::make_shared<pt3::Shader>(&rc, sp);
+}
+
+std::shared_ptr<pt3::Shader>
+MeshRenderer::CreateEdgeShader()
+{
+    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+
+    // layout
+    std::vector<ur::VertexAttrib> layout;
+    layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 32, 0));
+    layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 32, 12));
+    layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 32, 24));
+    rc.CreateVertexLayout(layout);
+
+	// vert
+	std::vector<sw::NodePtr> vert_nodes;
+
+	auto projection = std::make_shared<sw::node::ShaderUniform>(PROJ_MAT_NAME,  sw::t_mat4);
+	auto view       = std::make_shared<sw::node::ShaderUniform>(VIEW_MAT_NAME,  sw::t_mat4);
+	auto model      = std::make_shared<sw::node::ShaderUniform>(MODEL_MAT_NAME, sw::t_mat4);
+
+	auto position   = std::make_shared<sw::node::ShaderInput>  (VERT_POSITION_NAME, sw::t_pos3);
+
+	auto pos_trans = std::make_shared<sw::node::PositionTrans>(4);
+	sw::make_connecting({ projection, 0 }, { pos_trans, sw::node::PositionTrans::ID_PROJ });
+	sw::make_connecting({ view,       0 }, { pos_trans, sw::node::PositionTrans::ID_VIEW });
+	sw::make_connecting({ model,      0 }, { pos_trans, sw::node::PositionTrans::ID_MODEL });
+	sw::make_connecting({ position,   0 }, { pos_trans, sw::node::PositionTrans::ID_POS });
+    auto vert_end = std::make_shared<sw::node::VertexShader>();
+
+    sw::make_connecting({ pos_trans, 0 }, { vert_end, 0 });
+	vert_nodes.push_back(vert_end);
+
+	//// varying
+	//auto col_in_uv = std::make_shared<sw::node::ShaderInput>(VERT_COLOR_NAME, sw::t_flt4);
+	//auto col_out_uv = std::make_shared<sw::node::ShaderOutput>(FRAG_COLOR_NAME, sw::t_flt4);
+	//sw::make_connecting({ col_in_uv, 0 }, { col_out_uv, 0 });
+	//vert_nodes.push_back(col_out_uv);
+
+	// frag
+    auto frag_col = std::make_shared<sw::node::Vector3>("", sm::vec3(0, 0, 0));
+    auto frag_end = std::make_shared<sw::node::FragmentShader>();
+    sw::make_connecting({ frag_col, 0 }, { frag_end, 0 });
+
+	// end
+	sw::Evaluator vert(vert_nodes);
+	sw::Evaluator frag({ frag_end });
+
+	//printf("//////////////////////////////////////////////////////////////////////////\n");
+	//printf("%s\n", vert.GenShaderStr().c_str());
+	//printf("//////////////////////////////////////////////////////////////////////////\n");
+	//printf("%s\n", frag.GenShaderStr().c_str());
+	//printf("//////////////////////////////////////////////////////////////////////////\n");
+
+	std::vector<std::string> texture_names;
+	pt3::Shader::Params sp(texture_names, layout);
+	sp.vs = vert.GenShaderStr().c_str();
+	sp.fs = frag.GenShaderStr().c_str();
+
+	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
+	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
+	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
+    sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
+
+    return std::make_shared<pt3::Shader>(&rc, sp);
 }
 
 }

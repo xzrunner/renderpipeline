@@ -10,6 +10,7 @@
 #include <boost/noncopyable.hpp>
 
 namespace model { struct MeshGeometry; }
+namespace pt3 { class Shader; }
 
 namespace rp
 {
@@ -29,10 +30,14 @@ public:
     virtual void Flush() override;
 
     void Draw(const model::MeshGeometry& mesh, const pt0::Material& material,
-        const pt0::RenderContext& ctx, const std::shared_ptr<ur::Shader>& shader = nullptr) const;
+        const pt0::RenderContext& ctx, const std::shared_ptr<ur::Shader>& shader = nullptr,
+        bool face = true) const;
 
 private:
     void InitShader();
+
+    static std::shared_ptr<pt3::Shader> CreateFaceShader();
+    static std::shared_ptr<pt3::Shader> CreateEdgeShader();
 
 }; // MeshRenderer
 
