@@ -37,6 +37,8 @@ enum ShaderType
 {
     SHADER_TEX_MAP = 0,
     SHADER_NO_TEX_MAP,
+
+    SHADER_MAX_COUNT,
 };
 
 }
@@ -91,7 +93,7 @@ void SkinRenderer::Draw(const model::Model& model,
 
 void SkinRenderer::InitShader()
 {
-    m_shaders.resize(2);
+    m_shaders.resize(SHADER_MAX_COUNT);
     m_shaders[SHADER_TEX_MAP]    = BuildShader(true);
     m_shaders[SHADER_NO_TEX_MAP] = BuildShader(false);
 }

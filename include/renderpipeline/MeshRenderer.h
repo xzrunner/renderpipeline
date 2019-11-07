@@ -36,7 +36,7 @@ public:
 private:
     void InitShader();
 
-    static std::shared_ptr<pt3::Shader> CreateFaceShader();
+    static std::shared_ptr<pt3::Shader> CreateFaceShader(bool tex_map);
     static std::shared_ptr<pt3::Shader> CreateEdgeShader();
 
 }; // MeshRenderer

@@ -20,17 +20,22 @@
 #include <shaderweaver/node/FragmentShader.h>
 #include <shaderweaver/node/SampleTex2D.h>
 #include <shaderweaver/node/Multiply.h>
+#include <painting0/Material.h>
 #include <painting3/Shader.h>
 #include <painting3/MaterialMgr.h>
 #include <model/MeshGeometry.h>
+#include <model/typedef.h>
 
 namespace
 {
 
 enum ShaderType
 {
-    FaceShader = 0,
-    EdgeShader,
+    SHADER_FACE_NO_TEX = 0,
+    SHADER_FACE_TEX,
+    SHADER_EDGE,
+
+    SHADER_MAX_COUNT,
 };
 
 }
@@ -55,9 +60,23 @@ void MeshRenderer::Draw(const model::MeshGeometry& mesh,
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
-    auto sd = shader ? shader : (face ? m_shaders[FaceShader] : m_shaders[EdgeShader]);
-    sd->Use();
+    std::shared_ptr<ur::Shader> sd = shader;
+    if (!sd)
+    {
+        if (face) {
+            if ((mesh.vertex_type & model::VERTEX_FLAG_TEXCOORDS) &&
+                material.FetchVar(pt3::MaterialMgr::PhongUniforms::diffuse_tex.name) != nullptr) {
+                sd = m_shaders[SHADER_FACE_TEX];
+            } else {
+                sd = m_shaders[SHADER_FACE_NO_TEX];
+            }
+        } else {
+            sd = m_shaders[SHADER_EDGE];
+        }
+    }
+    assert(sd);
 
+    sd->Use();
     material.Bind(*sd);
     ctx.Bind(*sd);
 
@@ -93,12 +112,15 @@ void MeshRenderer::Draw(const model::MeshGeometry& mesh,
 
 void MeshRenderer::InitShader()
 {
-    m_shaders.push_back(CreateFaceShader());
-    m_shaders.push_back(CreateEdgeShader());
+    m_shaders.resize(SHADER_MAX_COUNT);
+
+    m_shaders[SHADER_FACE_NO_TEX] = CreateFaceShader(false);
+    m_shaders[SHADER_FACE_TEX]    = CreateFaceShader(true);
+    m_shaders[SHADER_EDGE]        = CreateEdgeShader();
 }
 
 std::shared_ptr<pt3::Shader>
-MeshRenderer::CreateFaceShader()
+MeshRenderer::CreateFaceShader(bool tex_map)
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
@@ -202,7 +224,7 @@ MeshRenderer::CreateFaceShader()
 
     auto frag_end = std::make_shared<sw::node::FragmentShader>();
     std::vector<sw::NodePtr> cache_nodes;
-    if (false/*tex_map*/)
+    if (tex_map)
     {
         // frag_color = phong * texture2D(u_texture0, v_texcoord);
         auto tex_sample  = std::make_shared<sw::node::SampleTex2D>();
