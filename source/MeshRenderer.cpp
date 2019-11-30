@@ -31,8 +31,9 @@ namespace
 
 enum ShaderType
 {
-    SHADER_FACE_NO_TEX = 0,
-    SHADER_FACE_TEX,
+    SHADER_FACE_BASE = 0,
+    SHADER_FACE_TEXTURE,
+    SHADER_FACE_COLOR,
     SHADER_EDGE,
 
     SHADER_MAX_COUNT,
@@ -66,9 +67,11 @@ void MeshRenderer::Draw(const model::MeshGeometry& mesh,
         if (face) {
             if ((mesh.vertex_type & model::VERTEX_FLAG_TEXCOORDS) &&
                 material.FetchVar(pt3::MaterialMgr::PhongUniforms::diffuse_tex.name) != nullptr) {
-                sd = m_shaders[SHADER_FACE_TEX];
+                sd = m_shaders[SHADER_FACE_TEXTURE];
+            } else if (mesh.vertex_type & model::VERTEX_FLAG_COLOR) {
+                sd = m_shaders[SHADER_FACE_COLOR];
             } else {
-                sd = m_shaders[SHADER_FACE_NO_TEX];
+                sd = m_shaders[SHADER_FACE_BASE];
             }
         } else {
             sd = m_shaders[SHADER_EDGE];
@@ -114,13 +117,14 @@ void MeshRenderer::InitShader()
 {
     m_shaders.resize(SHADER_MAX_COUNT);
 
-    m_shaders[SHADER_FACE_NO_TEX] = CreateFaceShader(false);
-    m_shaders[SHADER_FACE_TEX]    = CreateFaceShader(true);
-    m_shaders[SHADER_EDGE]        = CreateEdgeShader();
+    m_shaders[SHADER_FACE_BASE]    = CreateFaceShader(ShaderType::Base);
+    m_shaders[SHADER_FACE_TEXTURE] = CreateFaceShader(ShaderType::Texture);
+    m_shaders[SHADER_FACE_COLOR]   = CreateFaceShader(ShaderType::Color);
+    m_shaders[SHADER_EDGE]         = CreateEdgeShader();
 }
 
 std::shared_ptr<pt3::Shader>
-MeshRenderer::CreateFaceShader(bool tex_map)
+MeshRenderer::CreateFaceShader(ShaderType type)
 {
     auto& rc = ur::Blackboard::Instance()->GetRenderContext();
 
@@ -129,9 +133,32 @@ MeshRenderer::CreateFaceShader(bool tex_map)
     //////////////////////////////////////////////////////////////////////////
 
     std::vector<ur::VertexAttrib> layout;
-    layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 32, 0));
-    layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 32, 12));
-    layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 32, 24));
+    //// todo
+    //layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 44, 0));
+    //layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 44, 12));
+    //layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 44, 24));
+    //layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    3, 4, 44, 32));
+
+    switch (type)
+    {
+    case ShaderType::Base:
+        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 24, 0));
+        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 24, 12));
+        break;
+    case ShaderType::Texture:
+        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 32, 0));
+        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 32, 12));
+        layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 32, 24));
+        break;
+    case ShaderType::Color:
+        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 36, 0));
+        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 36, 12));
+        layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    3, 4, 36, 24));
+        break;
+    default:
+        assert(0);
+    }
+
     rc.CreateVertexLayout(layout);
 
     //////////////////////////////////////////////////////////////////////////
@@ -147,6 +174,7 @@ MeshRenderer::CreateFaceShader(bool tex_map)
     auto position = std::make_shared<sw::node::ShaderInput>(VERT_POSITION_NAME, sw::t_flt3);
 	auto normal   = std::make_shared<sw::node::ShaderInput>(VERT_NORMAL_NAME,   sw::t_nor3);
     auto texcoord = std::make_shared<sw::node::ShaderInput>(VERT_TEXCOORD_NAME, sw::t_uv);
+    auto color    = std::make_shared<sw::node::ShaderInput>(VERT_COLOR_NAME,    sw::t_col3);
 
     // gl_Position =  u_projection * u_view * u_model * a_pos;
 	auto pos_trans = std::make_shared<sw::node::PositionTrans>(4);
@@ -167,10 +195,20 @@ MeshRenderer::CreateFaceShader(bool tex_map)
 	sw::make_connecting({ normal_mat, 0 }, { norm_trans, sw::node::NormalTrans::ID_NORMAL_MAT });
 	sw::make_connecting({ normal, 0 },     { norm_trans, sw::node::NormalTrans::ID_NORMAL });
 
-    // v_texcoord = a_texcoord;
-    auto v_texcoord = std::make_shared<sw::node::ShaderOutput>(FRAG_TEXCOORD_NAME, sw::t_uv);
-    sw::make_connecting({ texcoord, 0 }, { v_texcoord, 0 });
-    vert_nodes.push_back(v_texcoord);
+    if (type == ShaderType::Texture)
+    {
+        // v_texcoord = a_texcoord;
+        auto v_texcoord = std::make_shared<sw::node::ShaderOutput>(FRAG_TEXCOORD_NAME, sw::t_uv);
+        sw::make_connecting({ texcoord, 0 }, { v_texcoord, 0 });
+        vert_nodes.push_back(v_texcoord);
+    }
+    else if (type == ShaderType::Color)
+    {
+        // v_color = a_color;
+        auto v_color = std::make_shared<sw::node::ShaderOutput>(FRAG_COLOR_NAME, sw::t_col3);
+        sw::make_connecting({ color, 0 }, { v_color, 0 });
+        vert_nodes.push_back(v_color);
+    }
 
     // v_world_pos = vec3(u_model * a_pos);
     auto v_world_pos = std::make_shared<sw::node::ShaderOutput>(FRAG_POSITION_NAME, sw::t_flt3);
@@ -224,7 +262,13 @@ MeshRenderer::CreateFaceShader(bool tex_map)
 
     auto frag_end = std::make_shared<sw::node::FragmentShader>();
     std::vector<sw::NodePtr> cache_nodes;
-    if (tex_map)
+    switch (type)
+    {
+    case ShaderType::Base:
+        // frag_color = phong;
+        sw::make_connecting({ phong, 0 }, { frag_end, 0 });
+        break;
+    case ShaderType::Texture:
     {
         // frag_color = phong * texture2D(u_texture0, v_texcoord);
         auto tex_sample  = std::make_shared<sw::node::SampleTex2D>();
@@ -243,10 +287,24 @@ MeshRenderer::CreateFaceShader(bool tex_map)
 
         sw::make_connecting({ frag_color, 0 }, { frag_end, 0 });
     }
-    else
+        break;
+    case ShaderType::Color:
     {
-        // frag_color = phong;
-        sw::make_connecting({ phong, 0 }, { frag_end, 0 });
+        // frag_color = phong * v_color;
+
+        auto v_color = std::make_shared<sw::node::ShaderInput>(FRAG_COLOR_NAME, sw::t_col3);
+        cache_nodes.push_back(v_color);
+
+        auto frag_color = std::make_shared<sw::node::Multiply>();
+        sw::make_connecting({ v_color, 0 }, { frag_color, sw::node::Multiply::ID_A });
+        sw::make_connecting({ phong, 0 },   { frag_color, sw::node::Multiply::ID_B });
+        cache_nodes.push_back(frag_color);
+
+        sw::make_connecting({ frag_color, 0 }, { frag_end, 0 });
+    }
+        break;
+    default:
+        assert(0);
     }
 
     //////////////////////////////////////////////////////////////////////////

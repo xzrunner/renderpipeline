@@ -36,7 +36,14 @@ public:
 private:
     void InitShader();
 
-    static std::shared_ptr<pt3::Shader> CreateFaceShader(bool tex_map);
+    enum class ShaderType
+    {
+        Base,
+        Texture,
+        Color
+    };
+
+    static std::shared_ptr<pt3::Shader> CreateFaceShader(ShaderType type);
     static std::shared_ptr<pt3::Shader> CreateEdgeShader();
 
 }; // MeshRenderer
