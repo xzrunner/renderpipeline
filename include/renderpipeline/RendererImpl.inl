@@ -2,6 +2,9 @@
 
 #include "renderpipeline/RendererImpl.inl"
 
+#include <unirender/Blackboard.h>
+#include <unirender/RenderContext.h>
+
 namespace rp
 {
 
