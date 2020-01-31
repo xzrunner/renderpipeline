@@ -11,7 +11,7 @@ namespace pt0 { class Shader; }
 namespace rp
 {
 
-template<typename T>
+template<typename VT, typename IT>
 class RendererImpl
 {
 public:
@@ -23,7 +23,7 @@ protected:
         const std::shared_ptr<pt0::Shader>& shader);
 
 protected:
-    RenderBuffer<T> m_buf;
+    RenderBuffer<VT, IT> m_buf;
 
     uint32_t m_vbo = 0, m_ebo = 0;
 

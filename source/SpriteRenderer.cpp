@@ -24,7 +24,7 @@
 namespace
 {
 
-void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex>& dst,
+void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex, unsigned short>& dst,
 	                    const tess::Painter::Buffer& src)
 {
 	dst.Reserve(src.indices.size(), src.vertices.size());
@@ -66,7 +66,7 @@ void SpriteRenderer::DrawQuad(const float* positions, const float* texcoords, in
 		m_tex_id = texid;
 	}
 
-    if (m_buf.vertices.size() + 4 >= RenderBuffer<SpriteVertex>::MAX_VERTEX_NUM) {
+    if (m_buf.vertices.size() + 4 >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
         Flush();
     }
 
@@ -122,7 +122,7 @@ void SpriteRenderer::DrawPainter(const tess::Painter& pt, const sm::mat4& mat)
 				m_tex_id = cached_texid;
 			}
 
-            if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex>::MAX_VERTEX_NUM) {
+            if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
                 Flush();
             }
 

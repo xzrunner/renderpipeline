@@ -17,7 +17,7 @@ struct VolumeVertex
     uint32_t col = 0;
 };
 
-class VolumeRenderer : public IRenderer, private RendererImpl<VolumeVertex>, private boost::noncopyable
+class VolumeRenderer : public IRenderer, private RendererImpl<VolumeVertex, unsigned short>, private boost::noncopyable
 {
 public:
 	VolumeRenderer();

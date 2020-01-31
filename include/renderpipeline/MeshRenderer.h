@@ -22,7 +22,7 @@ struct MeshVertex
     sm::vec2 texcoord;
 };
 
-class MeshRenderer : public IRenderer, private RendererImpl<MeshVertex>, private boost::noncopyable
+class MeshRenderer : public IRenderer, private RendererImpl<MeshVertex, unsigned short>, private boost::noncopyable
 {
 public:
     MeshRenderer();

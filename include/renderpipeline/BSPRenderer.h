@@ -17,7 +17,7 @@ struct BSPVertex
     sm::vec2 texcoord_light;
 };
 
-class BSPRenderer : public IRenderer, private RendererImpl<BSPVertex>, private boost::noncopyable
+class BSPRenderer : public IRenderer, private RendererImpl<BSPVertex, unsigned short>, private boost::noncopyable
 {
 public:
     BSPRenderer();

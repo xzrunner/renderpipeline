@@ -18,7 +18,7 @@ struct Shape3Vertex
     uint32_t col = 0;
 };
 
-class Shape3Renderer : public IRenderer, private RendererImpl<Shape3Vertex>, private boost::noncopyable
+class Shape3Renderer : public IRenderer, private RendererImpl<Shape3Vertex, unsigned short>, private boost::noncopyable
 {
 public:
     Shape3Renderer();

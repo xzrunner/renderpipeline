@@ -5,7 +5,7 @@
 namespace rp
 {
 
-template<typename T>
+template<typename VT, typename IT>
 class RenderBuffer
 {
 public:
@@ -35,12 +35,12 @@ public:
     static const int MAX_VERTEX_NUM = 0xffff;
 
 public:
-    std::vector<T>              vertices;
-    std::vector<unsigned short> indices;
+    std::vector<VT> vertices;
+    std::vector<IT> indices;
 
-    unsigned short  curr_index = 0;
-    T*              vert_ptr   = nullptr;
-    unsigned short* index_ptr  = nullptr;
+    IT  curr_index = 0;
+    VT* vert_ptr   = nullptr;
+    IT* index_ptr  = nullptr;
 
 }; // RenderBuffer
 

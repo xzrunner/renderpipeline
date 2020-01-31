@@ -35,7 +35,7 @@ void Shape3Renderer::DrawLines(size_t num, const float* positions, uint32_t colo
         m_draw_mode = ur::DRAW_LINES;
     }
 
-    if (m_buf.vertices.size() + num >= RenderBuffer<Shape3Vertex>::MAX_VERTEX_NUM) {
+    if (m_buf.vertices.size() + num >= RenderBuffer<Shape3Vertex, unsigned short>::MAX_VERTEX_NUM) {
         Flush();
     }
 

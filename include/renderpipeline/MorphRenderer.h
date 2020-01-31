@@ -19,7 +19,7 @@ struct MorphVertex
     sm::vec2 texcoord;
 };
 
-class MorphRenderer : public IRenderer, private RendererImpl<MorphVertex>, private boost::noncopyable
+class MorphRenderer : public IRenderer, private RendererImpl<MorphVertex, unsigned short>, private boost::noncopyable
 {
 public:
     MorphRenderer();

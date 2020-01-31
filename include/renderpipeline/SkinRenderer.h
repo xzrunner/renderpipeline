@@ -22,7 +22,7 @@ struct SkinVertex
     uint32_t blend_weights;
 };
 
-class SkinRenderer : public IRenderer, private RendererImpl<SkinVertex>, private boost::noncopyable
+class SkinRenderer : public IRenderer, private RendererImpl<SkinVertex, unsigned short>, private boost::noncopyable
 {
 public:
     SkinRenderer();

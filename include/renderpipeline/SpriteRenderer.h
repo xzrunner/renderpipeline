@@ -20,7 +20,7 @@ struct SpriteVertex
 	uint32_t col = 0;
 };
 
-class SpriteRenderer : public IRenderer, private RendererImpl<SpriteVertex>, private boost::noncopyable
+class SpriteRenderer : public IRenderer, private RendererImpl<SpriteVertex, unsigned short>, private boost::noncopyable
 {
 public:
 	SpriteRenderer();
