@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderpipeline/RendererImpl.inl"
+#include "renderpipeline/UniformNames.h"
 
 #include <unirender/Blackboard.h>
 #include <unirender/RenderContext.h>
