@@ -56,6 +56,12 @@
     <ClCompile Include="..\..\..\source\HDREquirectangularToCubemap.cpp">
       <Filter>feature\IBL</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\HeightfieldRenderer.cpp">
+      <Filter>renderer\heightfield</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\HeightfieldGrayRenderer.cpp">
+      <Filter>renderer\heightfield</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\renderpipeline\Callback.h" />
@@ -116,6 +122,12 @@
     <ClInclude Include="..\..\..\include\renderpipeline\HDREquirectangularToCubemap.h">
       <Filter>feature\IBL</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\HeightfieldRenderer.h">
+      <Filter>renderer\heightfield</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\renderpipeline\HeightfieldGrayRenderer.h">
+      <Filter>renderer\heightfield</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="renderer">
@@ -135,6 +147,9 @@
     </Filter>
     <Filter Include="shader\IBL">
       <UniqueIdentifier>{cc027504-6fd8-4cf7-97ac-d1e0733055bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer\heightfield">
+      <UniqueIdentifier>{477cfd4a-a633-449e-9afc-e0461e5ab5a1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
