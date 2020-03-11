@@ -5,6 +5,7 @@
 #include <unirender/VertexAttrib.h>
 #include <unirender/RenderContext.h>
 #include <renderpipeline/UniformNames.h>
+#include <painting0/ShaderUniforms.h>
 #include <painting3/Shader.h>
 #include <model/TextureLoader.h>
 
@@ -20,12 +21,24 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform mat4 u_model;
 
+uniform vec2 u_inv_res;
+
 uniform sampler2D u_heightmap;
 
 #ifdef BUILD_NORMAL_MAP
 varying vec2 v_texcoord;
 #endif // BUILD_NORMAL_MAP
 varying vec3 v_fragpos;
+varying vec3 v_normal;
+
+vec3 ComputeNormalCentralDifference(vec2 position, float heightExaggeration)
+{
+    float leftHeight = texture2D(u_heightmap, position - vec2(1.0, 0.0) * u_inv_res).r * heightExaggeration;
+    float rightHeight = texture2D(u_heightmap, position + vec2(1.0, 0.0) * u_inv_res).r * heightExaggeration;
+    float bottomHeight = texture2D(u_heightmap, position - vec2(0.0, 1.0) * u_inv_res).r * heightExaggeration;
+    float topHeight = texture2D(u_heightmap, position + vec2(0.0, 1.0) * u_inv_res).r * heightExaggeration;
+    return normalize(vec3(leftHeight - rightHeight, 2.0, bottomHeight - topHeight));
+}
 
 void main()
 {
@@ -38,6 +51,8 @@ void main()
     v_texcoord = texcoord;
 #endif // BUILD_NORMAL_MAP
     v_fragpos = vec3(u_model * pos);
+    v_normal = ComputeNormalCentralDifference(texcoord, 500);
+
 	gl_Position = u_projection * u_view * u_model * pos;
 }
 
@@ -50,20 +65,22 @@ uniform sampler2D u_normal_map;
 varying vec2 v_texcoord;
 #endif // BUILD_NORMAL_MAP
 varying vec3 v_fragpos;
+varying vec3 v_normal;
 
 void main()
 {
-#ifdef BUILD_NORMAL_MAP
-    // fixme
-    //vec3 N = texture2D(u_normal_map, v_texcoord).rgb;
-    vec3 N = normalize(texture2D(u_normal_map, v_texcoord).rgb);
-#else
-    vec3 fdx = dFdx(v_fragpos);
-    vec3 fdy = dFdy(v_fragpos);
-    vec3 N = normalize(cross(fdx, fdy));
-#endif // BUILD_NORMAL_MAP
+//#ifdef BUILD_NORMAL_MAP
+//    // fixme
+//    //vec3 N = texture2D(u_normal_map, v_texcoord).rgb;
+//    vec3 N = normalize(texture2D(u_normal_map, v_texcoord).rgb);
+//#else
+//    vec3 fdx = dFdx(v_fragpos);
+//    vec3 fdy = dFdy(v_fragpos);
+//    vec3 N = normalize(cross(fdx, fdy));
+//#endif // BUILD_NORMAL_MAP
+    vec3 N = v_normal;
 
-    vec3 light_dir = normalize(vec3(0, -10, 10) - v_fragpos);
+    vec3 light_dir = normalize(vec3(0, 1000, 1000) - v_fragpos);
     float diff = max(dot(N, light_dir), 0.0);
     vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);
 	gl_FragColor = vec4(diffuse, 1.0);
@@ -113,6 +130,16 @@ void HeightfieldGrayRenderer::Setup(const std::shared_ptr<hf::HeightField>& hf)
         old->Height() != m_height_map->Height()) {
         BuildVertBuf();
     }
+
+    // bind shader
+    auto shader = m_shaders.front();
+    shader->Use();
+
+    // update uniforms
+    pt0::ShaderUniforms vals;
+    sm::vec2 inv_res(1.0f / m_height_map->Width(), 1.0f / m_height_map->Height());
+    vals.AddVar("u_inv_res", pt0::RenderVariant(inv_res));
+    vals.Bind(*shader);
 }
 
 void HeightfieldGrayRenderer::Clear()
