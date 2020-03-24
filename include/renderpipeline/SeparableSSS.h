@@ -11,17 +11,17 @@ namespace rp
 namespace node
 {
 
-class SeparableSSS : public rg::Node
+class SeparableSSS : public rendergraph::Node
 {
 public:
     SeparableSSS() {
         m_exports = {
-            {{ rg::VariableType::Vec4Array, "kernel" }}
+            {{ rendergraph::VariableType::Vec4Array, "kernel" }}
         };
     }
 
-    virtual void Eval(const rg::RenderContext& rc, size_t port_idx,
-        rg::ShaderVariant& var, uint32_t& flags) const override;
+    virtual void Eval(const rendergraph::RenderContext& rc, size_t port_idx,
+        rendergraph::ShaderVariant& var, uint32_t& flags) const override;
 
     void SetProps(int nsamples, const sm::vec3& strength, const sm::vec3& falloff) {
         m_samples_num = nsamples;
@@ -43,7 +43,7 @@ private:
 
     mutable std::vector<sm::vec4> m_kernel;
 
-    RTTR_ENABLE(rg::Node)
+    RTTR_ENABLE(rendergraph::Node)
 
 }; // SeparableSSS
 

@@ -10,26 +10,26 @@ namespace rp
 namespace node
 {
 
-class GlobalIllumination : public rg::Node
+class GlobalIllumination : public rendergraph::Node
 {
 public:
     GlobalIllumination()
     {
         m_imports = {
-            {{ rg::VariableType::Port,    "prev"   }},
-            {{ rg::VariableType::Texture, "skybox" }}
+            {{ rendergraph::VariableType::Port,    "prev"   }},
+            {{ rendergraph::VariableType::Texture, "skybox" }}
         };
         m_exports = {
-            {{ rg::VariableType::Port,        "next"           }},
-            {{ rg::VariableType::SamplerCube, "irradiance_map" }},
-            {{ rg::VariableType::SamplerCube, "prefilter_map"  }},
-            {{ rg::VariableType::Sampler2D,   "brdf_lut"       }},
+            {{ rendergraph::VariableType::Port,        "next"           }},
+            {{ rendergraph::VariableType::SamplerCube, "irradiance_map" }},
+            {{ rendergraph::VariableType::SamplerCube, "prefilter_map"  }},
+            {{ rendergraph::VariableType::Sampler2D,   "brdf_lut"       }},
         };
     }
 
-    virtual void Execute(const rg::RenderContext& rc) override;
-    virtual void Eval(const rg::RenderContext& rc, size_t port_idx,
-        rg::ShaderVariant& var, uint32_t& flags) const override;
+    virtual void Execute(const rendergraph::RenderContext& rc) override;
+    virtual void Eval(const rendergraph::RenderContext& rc, size_t port_idx,
+        rendergraph::ShaderVariant& var, uint32_t& flags) const override;
 
 private:
     enum InputID
@@ -47,7 +47,7 @@ private:
 private:
     pt3::GlobalIllumination m_gi;
 
-    RTTR_ENABLE(rg::Node)
+    RTTR_ENABLE(rendergraph::Node)
 
 }; // GlobalIllumination
 

@@ -5,13 +5,13 @@ namespace rp
 namespace node
 {
 
-void SeparableSSS::Eval(const rg::RenderContext& rc, size_t port_idx,
-                        rg::ShaderVariant& var, uint32_t& flags) const
+void SeparableSSS::Eval(const rendergraph::RenderContext& rc, size_t port_idx,
+                        rendergraph::ShaderVariant& var, uint32_t& flags) const
 {
     if (m_kernel.empty()) {
         CalculateKernel(m_kernel, m_samples_num, m_strength, m_falloff);
     }
-    var.type = rg::VariableType::Vec4Array;
+    var.type = rendergraph::VariableType::Vec4Array;
     var.vec4_array = m_kernel;
 }
 
