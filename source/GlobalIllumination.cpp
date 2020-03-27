@@ -12,7 +12,7 @@ namespace rp
 namespace node
 {
 
-void GlobalIllumination::Execute(const rendergraph::RenderContext& rc)
+void GlobalIllumination::Execute(const std::shared_ptr<dag::Context>& ctx)
 {
     if (m_gi.irradiance_map) {
         return;
@@ -32,7 +32,8 @@ void GlobalIllumination::Execute(const rendergraph::RenderContext& rc)
         return;
     }
 
-    InitGIWithSkybox(rc.rc, tex_node->GetTexID(), m_gi);
+    auto rc = std::static_pointer_cast<rendergraph::RenderContext>(ctx);
+    InitGIWithSkybox(rc->rc, tex_node->GetTexID(), m_gi);
 }
 
 void GlobalIllumination::Eval(const rendergraph::RenderContext& rc, size_t port_idx,

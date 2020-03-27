@@ -27,7 +27,7 @@ public:
         };
     }
 
-    virtual void Execute(const rendergraph::RenderContext& rc) override;
+    virtual void Execute(const std::shared_ptr<dag::Context>& ctx = nullptr);
     virtual void Eval(const rendergraph::RenderContext& rc, size_t port_idx,
         rendergraph::ShaderVariant& var, uint32_t& flags) const override;
 
