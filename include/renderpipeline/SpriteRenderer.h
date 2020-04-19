@@ -5,6 +5,7 @@
 
 #include <SM_Vector.h>
 #include <SM_Matrix.h>
+#include <unirender2/typedef.h>
 
 #include <boost/noncopyable.hpp>
 
@@ -12,7 +13,7 @@ namespace tess { class Painter; class Palette; }
 
 namespace rp
 {
-
+    
 struct SpriteVertex
 {
 	sm::vec2 pos;
@@ -23,20 +24,27 @@ struct SpriteVertex
 class SpriteRenderer : public IRenderer, private RendererImpl<SpriteVertex, unsigned short>, private boost::noncopyable
 {
 public:
-	SpriteRenderer();
+	SpriteRenderer(const ur2::Device& dev);
 
-	virtual void Flush() override;
+	virtual void Flush(ur2::Context& ctx) override;
 
-	void DrawQuad(const float* positions, const float* texcoords, int texid, uint32_t color);
-	void DrawPainter(const tess::Painter& pt, const sm::mat4& mat = sm::mat4());
+	void DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs, const float* positions,
+        const float* texcoords, int tex_id, uint32_t color);
+	void DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs, const tess::Painter& pt,
+        const sm::mat4& mat = sm::mat4());
 
 	auto& GetPalette() const { return *m_palette; }
 
 private:
-	void InitShader();
+	void InitShader(const ur2::Device& dev);
 
 private:
 	std::unique_ptr<tess::Palette> m_palette = nullptr;
+
+//    ur2::TexturePtr m_tex = nullptr;
+    int m_tex_id = 0;
+
+    ur2::RenderState m_rs;
 
 }; // SpriteRenderer
 

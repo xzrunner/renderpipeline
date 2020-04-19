@@ -1,10 +1,14 @@
 #include "renderpipeline/VolumeRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
+#include <unirender2/ComponentDataType.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexBufferAttribute.h>
+#include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/Blackboard.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -19,22 +23,37 @@
 namespace rp
 {
 
-VolumeRenderer::VolumeRenderer()
+VolumeRenderer::VolumeRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-	InitShader();
+	InitShader(dev);
 }
 
-void VolumeRenderer::Flush()
+void VolumeRenderer::Flush(ur2::Context& ctx)
 {
-    PrepareRenderState();
-    FlushBuffer(ur::DRAW_TRIANGLES, m_shaders[0]);
-	RestoreRenderState();
+    ur2::RenderState rs_new(m_rs);
+    PrepareRenderState(rs_new);
+
+    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, rs_new, m_shaders[0]);
 }
 
-void VolumeRenderer::DrawCube(const float* positions, const float* texcoords, int texid, uint32_t color)
+void VolumeRenderer::DrawCube(ur2::Context& ctx, const ur2::RenderState& rs, const float* positions,
+                              const float* texcoords, int texid, uint32_t color)
 {
+    if (m_buf.vertices.empty())
+    {
+        m_rs = rs;
+    }
+    else
+    {
+        if (m_rs != rs) {
+            Flush(ctx);
+            m_rs = rs;
+        }
+    }
+
 	if (m_tex_id != texid) {
-		Flush();
+		Flush(ctx);
 		m_tex_id = texid;
 	}
 
@@ -66,16 +85,19 @@ void VolumeRenderer::DrawCube(const float* positions, const float* texcoords, in
 	m_buf.curr_index += 4;
 }
 
-void VolumeRenderer::InitShader()
+void VolumeRenderer::InitShader(const ur2::Device& dev)
 {
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
 	// layout
-	std::vector<ur::VertexAttrib> layout;
-	layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, sizeof(float),    28, 0));
-	layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 3, sizeof(float),    28, 12));
-	layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    4, sizeof(uint8_t),  28, 24));
-	rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 28
+    );
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 12, 28
+    );
+    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Byte, 4, 24, 28
+    );
 
 	// vert
 	std::vector<sw::NodePtr> vert_nodes;
@@ -131,49 +153,29 @@ void VolumeRenderer::InitShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
 
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-	auto& wc = pt3::Blackboard::Instance()->GetWindowContext();
-	auto shader = std::make_shared<pt3::Shader>(&rc, sp);
-    shader->AddNotify(std::const_pointer_cast<pt3::WindowContext>(wc));
-    m_shaders.push_back(shader);
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
-void VolumeRenderer::PrepareRenderState()
+void VolumeRenderer::PrepareRenderState(ur2::RenderState& rs)
 {
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
 	// enable alpha blend
-	rc.EnableBlend(true);
-	rc.SetBlend(ur::BLEND_SRC_ALPHA, ur::BLEND_ONE_MINUS_SRC_ALPHA);
+    rs.blending.enabled = true;
+    rs.blending.src = ur2::BlendingFactor::SrcAlpha;
+    rs.blending.dst = ur2::BlendingFactor::OneMinusSrcAlpha;
 	// enable alpha test
-	rc.SetAlphaTest(ur::ALPHA_GREATER, 0.05f);
+    rs.alpha_test.enabled = true;
+    rs.alpha_test.function = ur2::AlphaTestFunc::Greater;
+    rs.alpha_test.ref = 0.05f;
 	// disable depth test
-	rc.SetZTest(ur::DEPTH_DISABLE);
+    rs.depth_test.enabled = false;
 	// disable face cull
-	rc.SetCullMode(ur::CULL_DISABLE);
-}
-
-void VolumeRenderer::RestoreRenderState()
-{
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
-	// disable alpha blend
-	rc.EnableBlend(false);
-	// disable alpha test
-	rc.SetAlphaTest(ur::ALPHA_DISABLE);
-	// enable depth test
-	rc.SetZTest(ur::DEPTH_LESS_EQUAL);
-	rc.SetZWrite(true);
-	// enable face cull
-	rc.SetFrontFace(true);
-	rc.SetCullMode(ur::CULL_BACK);
+    rs.facet_culling.enabled = false;
 }
 
 }

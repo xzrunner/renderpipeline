@@ -1,10 +1,14 @@
 #include "renderpipeline/SkyboxRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
-#include <unirender/VertexAttrib.h>
-#include <unirender/TextureCube.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/Device.h>
+#include <unirender2/Context.h>
+#include <unirender2/Texture.h>
+#include <unirender2/DrawState.h>
+#include <painting3/Shader.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -20,39 +24,32 @@
 #include <shaderweaver/node/CombineTwo.h>
 #include <shaderweaver/node/Vector1.h>
 #include <shaderweaver/node/FragmentShader.h>
-#include <painting3/Shader.h>
 
 namespace rp
 {
 
-SkyboxRenderer::SkyboxRenderer()
+SkyboxRenderer::SkyboxRenderer(const ur2::Device& dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
-void SkyboxRenderer::Flush()
+void SkyboxRenderer::Draw(ur2::Context& ctx, const ur2::Texture& cube_tex) const
 {
+    m_shaders[0]->Bind();
+
+    cube_tex.Bind();
+
+    ur2::DrawState draw;
+    draw.program = m_shaders[0];
+    ctx.DrawCube(ur2::Context::VertexLayout::Pos, draw);
 }
 
-void SkyboxRenderer::Draw(const ur::TextureCube& tcube) const
+void SkyboxRenderer::InitShader(const ur2::Device& dev)
 {
-    m_shaders[0]->Use();
-
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-    rc.BindTexture(tcube.GetTexID(), 0);
-    rc.RenderCube(ur::RenderContext::VertLayout::VL_POS);
-}
-
-void SkyboxRenderer::InitShader()
-{
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<ur::VertexAttrib> layout;
-    rc.CreateVertexLayout(layout);
 
     //////////////////////////////////////////////////////////////////////////
     // vert
@@ -138,15 +135,12 @@ void SkyboxRenderer::InitShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
 
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat, VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat, PROJ_MAT_NAME);
-
-    m_shaders.push_back(std::make_shared<pt3::Shader>(&rc, sp));
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
 }

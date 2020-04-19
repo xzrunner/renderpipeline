@@ -3,8 +3,6 @@
 #include <painting3/GlobalIllumination.h>
 #include <rendergraph/Node.h>
 
-namespace ur { class RenderContext; }
-
 namespace rp
 {
 namespace node

@@ -1,8 +1,7 @@
 #include "renderpipeline/GlobalIllumination.h"
 #include "renderpipeline/Utility.h"
 
-#include <unirender/Texture.h>
-#include <unirender/TextureCube.h>
+#include <unirender2/Texture.h>
 #include <painting3/GlobalIllumination.h>
 #include <rendergraph/RenderContext.h>
 #include <rendergraph/node/Texture.h>
@@ -33,7 +32,7 @@ void GlobalIllumination::Execute(const std::shared_ptr<dag::Context>& ctx)
     }
 
     auto rc = std::static_pointer_cast<rendergraph::RenderContext>(ctx);
-    InitGIWithSkybox(rc->rc, tex_node->GetTexID(), m_gi);
+    InitGIWithSkybox(*rc->ur_dev, *rc->ur_ctx, tex_node->GetTexture(), m_gi);
 }
 
 void GlobalIllumination::Eval(const rendergraph::RenderContext& rc, size_t port_idx,
@@ -56,7 +55,7 @@ void GlobalIllumination::Eval(const rendergraph::RenderContext& rc, size_t port_
     case ID_BRDF_LUT:
         if (m_gi.brdf_lut) {
             var.type = rendergraph::VariableType::Sampler2D;
-            var.res_id = m_gi.brdf_lut->TexID();
+            var.res_id = m_gi.brdf_lut->GetTexID();
         }
         break;
     }

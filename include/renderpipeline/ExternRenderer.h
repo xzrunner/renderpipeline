@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace pt2 { class Shader; }
+namespace ur2 { class Device; class Context; class VertexArray; }
 
 namespace rp
 {
@@ -16,27 +16,21 @@ namespace rp
 class ExternRenderer : public IRenderer, boost::noncopyable
 {
 public:
-	ExternRenderer();
-	~ExternRenderer();
+	ExternRenderer(const ur2::Device& dev);
 
-	virtual void Flush() override;
+	virtual void Flush(ur2::Context& ctx) override {}
 
-	void DrawTexSpr(const std::shared_ptr<pt2::Shader>& shader, const sm::mat4& mat) const;
-	void DrawNoTexSpr(const std::shared_ptr<pt2::Shader>& shader, const sm::mat4& mat) const;
-
-private:
-	void InitRenderData();
+	void DrawTexSpr(ur2::Context& ctx,
+        const std::shared_ptr<ur2::ShaderProgram>& shader, const sm::mat4& mat) const;
+	void DrawNoTexSpr(ur2::Context& ctx,
+        const std::shared_ptr<ur2::ShaderProgram>& shader, const sm::mat4& mat) const;
 
 private:
-	struct VertexBuf
-	{
-		uint32_t vao = 0;
-		uint32_t vbo = 0;
-		uint32_t ebo = 0;
-	};
+	void InitRenderData(const ur2::Device& dev);
 
 private:
-	VertexBuf m_vb_tex, m_vb_no_tex;
+    std::shared_ptr<ur2::VertexArray> m_va_tex = nullptr;
+    std::shared_ptr<ur2::VertexArray> m_va_no_tex = nullptr;
 
 }; // ExternRenderer
 

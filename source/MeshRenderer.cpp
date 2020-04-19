@@ -1,9 +1,6 @@
 #include "renderpipeline/MeshRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
-#include <unirender/VertexAttrib.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -20,9 +17,16 @@
 #include <shaderweaver/node/FragmentShader.h>
 #include <shaderweaver/node/SampleTex2D.h>
 #include <shaderweaver/node/Multiply.h>
+#include <unirender2/DrawState.h>
+#include <unirender2/Context.h>
+#include <unirender2/VertexBufferAttribute.h>
 #include <painting0/Material.h>
+#include <painting0/ModelMatUpdater.h>
+#include <painting0/CamPosUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/MaterialMgr.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <model/MeshGeometry.h>
 #include <model/typedef.h>
 
@@ -44,24 +48,20 @@ enum ShaderType
 namespace rp
 {
 
-MeshRenderer::MeshRenderer()
+MeshRenderer::MeshRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
-void MeshRenderer::Flush()
-{
-}
-
-void MeshRenderer::Draw(const model::MeshGeometry& mesh,
+void MeshRenderer::Draw(ur2::Context& ur_ctx,
+                        const model::MeshGeometry& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx,
-                        const std::shared_ptr<ur::Shader>& shader,
+                        const std::shared_ptr<ur2::ShaderProgram>& shader,
                         bool face) const
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
-    std::shared_ptr<ur::Shader> sd = shader;
+    std::shared_ptr<ur2::ShaderProgram> sd = shader;
     if (!sd)
     {
         if (face) {
@@ -79,87 +79,91 @@ void MeshRenderer::Draw(const model::MeshGeometry& mesh,
     }
     assert(sd);
 
-    sd->Use();
+    sd->Bind();
     material.Bind(*sd);
     ctx.Bind(*sd);
 
 	auto& geo = mesh;
-    auto mode = face ? ur::DRAW_TRIANGLES : ur::DRAW_LINES;
+    if (!geo.vertex_array) {
+        return;
+    }
 
+    auto mode = face ? ur2::PrimitiveType::Triangles : ur2::PrimitiveType::Lines;
+
+    ur2::DrawState draw;
+    draw.program = shader;
+    draw.vertex_array = geo.vertex_array;
 	for (auto& sub : geo.sub_geometries)
-	{
-		if (geo.vao > 0)
-		{
-			if (sub.index) {
-				ur::Blackboard::Instance()->GetRenderContext().DrawElementsVAO(
-					mode, sub.offset, sub.count, geo.vao);
-			} else {
-				ur::Blackboard::Instance()->GetRenderContext().DrawArraysVAO(
-					mode, sub.offset, sub.count, geo.vao);
-			}
-		}
-		else
-		{
-			auto& sub = geo.sub_geometries[0];
-			if (geo.ebo) {
-				rc.BindBuffer(ur::INDEXBUFFER, geo.ebo);
-				rc.BindBuffer(ur::VERTEXBUFFER, geo.vbo);
-				rc.DrawElements(mode, sub.offset, sub.count);
-			} else {
-				rc.BindBuffer(ur::VERTEXBUFFER, geo.vbo);
-				rc.DrawArrays(mode, sub.offset, sub.count);
-			}
-		}
+    {
+        draw.offset = sub.offset;
+        draw.count = sub.count;
+        ur_ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
 	}
 }
 
-void MeshRenderer::InitShader()
+void MeshRenderer::InitShader(const ur2::Device& dev)
 {
     m_shaders.resize(SHADER_MAX_COUNT);
 
-    m_shaders[SHADER_FACE_BASE]    = CreateFaceShader(ShaderType::Base);
-    m_shaders[SHADER_FACE_TEXTURE] = CreateFaceShader(ShaderType::Texture);
-    m_shaders[SHADER_FACE_COLOR]   = CreateFaceShader(ShaderType::Color);
-    m_shaders[SHADER_EDGE]         = CreateEdgeShader();
+    m_shaders[SHADER_FACE_BASE]    = CreateFaceShader(dev, ShaderType::Base);
+    m_shaders[SHADER_FACE_TEXTURE] = CreateFaceShader(dev, ShaderType::Texture);
+    m_shaders[SHADER_FACE_COLOR]   = CreateFaceShader(dev, ShaderType::Color);
+    m_shaders[SHADER_EDGE]         = CreateEdgeShader(dev);
 }
 
-std::shared_ptr<pt3::Shader>
-MeshRenderer::CreateFaceShader(ShaderType type)
+std::shared_ptr<ur2::ShaderProgram>
+MeshRenderer::CreateFaceShader(const ur2::Device& dev, ShaderType type)
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<ur::VertexAttrib> layout;
-    //// todo
-    //layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 44, 0));
-    //layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 44, 12));
-    //layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 44, 24));
-    //layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    3, 4, 44, 32));
-
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs;
     switch (type)
     {
     case ShaderType::Base:
-        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 24, 0));
-        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 24, 12));
+        // VERT_POSITION_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 0, 24
+        ));
+        // VERT_NORMAL_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 12, 24
+        ));
         break;
     case ShaderType::Texture:
-        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 32, 0));
-        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 32, 12));
-        layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 32, 24));
+        // VERT_POSITION_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 0, 32
+        ));
+        // VERT_NORMAL_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 12, 32
+        ));
+        // VERT_TEXCOORD_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 2, 24, 32
+        ));
         break;
     case ShaderType::Color:
-        layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 36, 0));
-        layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 36, 12));
-        layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    3, 4, 36, 24));
+        // VERT_POSITION_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 0, 32
+        ));
+        // VERT_NORMAL_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 12, 32
+        ));
+        // VERT_COLOR_NAME
+        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 3, 24, 32
+        ));
         break;
     default:
         assert(0);
     }
 
-    rc.CreateVertexLayout(layout);
+
 
     //////////////////////////////////////////////////////////////////////////
     // vert
@@ -320,30 +324,31 @@ MeshRenderer::CreateFaceShader(ShaderType type)
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
-
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
-
-    return std::make_shared<pt3::Shader>(&rc, sp);
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt0::CamPosUpdater>(*shader, sw::node::CameraPos::CamPosName()));
+    return shader;
 }
 
-std::shared_ptr<pt3::Shader>
-MeshRenderer::CreateEdgeShader()
+std::shared_ptr<ur2::ShaderProgram>
+MeshRenderer::CreateEdgeShader(const ur2::Device& dev)
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     // layout
-    std::vector<ur::VertexAttrib> layout;
-    layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, 4, 32, 0));
-    layout.push_back(ur::VertexAttrib(VERT_NORMAL_NAME,   3, 4, 32, 12));
-    layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, 4, 32, 24));
-    rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    // VERT_POSITION_NAME
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 32
+    );
+    // VERT_NORMAL_NAME
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 12, 32
+    );
+    // VERT_TEXCOORD_NAME
+    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 24, 32
+    );
 
 	// vert
 	std::vector<sw::NodePtr> vert_nodes;
@@ -385,17 +390,12 @@ MeshRenderer::CreateEdgeShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
-
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
-
-    return std::make_shared<pt3::Shader>(&rc, sp);
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt0::CamPosUpdater>(*shader, sw::node::CameraPos::CamPosName()));
+    return shader;
 }
 
 }

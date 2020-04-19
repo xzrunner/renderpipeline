@@ -22,12 +22,13 @@ RenderMgr::RenderMgr()
 {
 }
 
-std::shared_ptr<IRenderer> RenderMgr::SetRenderer(RenderType type)
+std::shared_ptr<IRenderer>
+RenderMgr::SetRenderer(const ur2::Device& dev, ur2::Context& ctx, RenderType type)
 {
 	if (m_curr_render != type)
 	{
 		if (m_curr_render > RenderType::NIL) {
-			m_renderers[static_cast<int>(m_curr_render)]->Flush();
+			m_renderers[static_cast<int>(m_curr_render)]->Flush(ctx);
 		}
 		m_curr_render = type;
 	}
@@ -41,39 +42,39 @@ std::shared_ptr<IRenderer> RenderMgr::SetRenderer(RenderType type)
 			break;
 		case RenderType::SPRITE:
 			m_renderers[static_cast<int>(RenderType::SPRITE)]
-				= std::make_shared<SpriteRenderer>();
+				= std::make_shared<SpriteRenderer>(dev);
 			break;
         case RenderType::MESH:
             m_renderers[static_cast<int>(RenderType::MESH)]
-                = std::make_shared<MeshRenderer>();
+                = std::make_shared<MeshRenderer>(dev);
             break;
         case RenderType::SKIN:
             m_renderers[static_cast<int>(RenderType::SKIN)]
-                = std::make_shared<SkinRenderer>();
+                = std::make_shared<SkinRenderer>(dev);
             break;
         case RenderType::SHAPE3D:
             m_renderers[static_cast<int>(RenderType::SHAPE3D)]
-                = std::make_shared<Shape3Renderer>();
+                = std::make_shared<Shape3Renderer>(dev);
             break;
 		case RenderType::TEX3D:
 			m_renderers[static_cast<int>(RenderType::TEX3D)]
-				= std::make_shared<VolumeRenderer>();
+				= std::make_shared<VolumeRenderer>(dev);
 			break;
         case RenderType::BSP:
             m_renderers[static_cast<int>(RenderType::BSP)]
-                = std::make_shared<BSPRenderer>();
+                = std::make_shared<BSPRenderer>(dev);
             break;
         case RenderType::MORPH:
             m_renderers[static_cast<int>(RenderType::MORPH)]
-                = std::make_shared<MorphRenderer>();
+                = std::make_shared<MorphRenderer>(dev);
             break;
         case RenderType::SKYBOX:
             m_renderers[static_cast<int>(RenderType::SKYBOX)]
-                = std::make_shared<SkyboxRenderer>();
+                = std::make_shared<SkyboxRenderer>(dev);
             break;
 		case RenderType::EXTERN:
 			m_renderers[static_cast<int>(RenderType::EXTERN)]
-				= std::make_shared<ExternRenderer>();
+				= std::make_shared<ExternRenderer>(dev);
 			break;
 		}
 	}
@@ -85,75 +86,75 @@ std::shared_ptr<IRenderer> RenderMgr::GetRenderer(RenderType type)
     return m_renderers[static_cast<int>(type)];
 }
 
-void RenderMgr::BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
-{
-    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
-    {
-        auto& rd = m_renderers[i];
-        if (!rd) {
-            continue;
-        }
-        for (auto& shader : rd->GetAllShaders()) {
-            if (shader->get_type() == rttr::type::get<pt2::Shader>()) {
-                std::static_pointer_cast<pt2::Shader>(shader)->AddNotify(wc);
-            }
-        }
-    }
-}
+//void RenderMgr::BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
+//{
+//    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+//    {
+//        auto& rd = m_renderers[i];
+//        if (!rd) {
+//            continue;
+//        }
+//        for (auto& shader : rd->GetAllShaders()) {
+//            if (shader->get_type() == rttr::type::get<pt2::Shader>()) {
+//                std::static_pointer_cast<pt2::Shader>(shader)->AddNotify(wc);
+//            }
+//        }
+//    }
+//}
+//
+//void RenderMgr::BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
+//{
+//    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+//    {
+//        auto& rd = m_renderers[i];
+//        if (!rd) {
+//            continue;
+//        }
+//        for (auto& shader : rd->GetAllShaders()) {
+//            if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
+//                std::static_pointer_cast<pt3::Shader>(shader)->AddNotify(wc);
+//            }
+//        }
+//    }
+//}
 
-void RenderMgr::BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
-{
-    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
-    {
-        auto& rd = m_renderers[i];
-        if (!rd) {
-            continue;
-        }
-        for (auto& shader : rd->GetAllShaders()) {
-            if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
-                std::static_pointer_cast<pt3::Shader>(shader)->AddNotify(wc);
-            }
-        }
-    }
-}
+//void RenderMgr::UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
+//{
+//    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+//    {
+//        auto& rd = m_renderers[i];
+//        if (!rd) {
+//            continue;
+//        }
+//        for (auto& shader : rd->GetAllShaders()) {
+//            if (shader->get_type() == rttr::type::get<pt2::Shader>()) {
+//                std::static_pointer_cast<pt2::Shader>(shader)->RemoveNotify(wc);
+//            }
+//        }
+//    }
+//}
+//
+//void RenderMgr::UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
+//{
+//    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
+//    {
+//        auto& rd = m_renderers[i];
+//        if (!rd) {
+//            continue;
+//        }
+//        for (auto& shader : rd->GetAllShaders()) {
+//            if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
+//                std::static_pointer_cast<pt3::Shader>(shader)->RemoveNotify(wc);
+//            }
+//        }
+//    }
+//}
 
-void RenderMgr::UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const
+void RenderMgr::Flush(const ur2::Device& dev, ur2::Context& ctx)
 {
-    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
-    {
-        auto& rd = m_renderers[i];
-        if (!rd) {
-            continue;
-        }
-        for (auto& shader : rd->GetAllShaders()) {
-            if (shader->get_type() == rttr::type::get<pt2::Shader>()) {
-                std::static_pointer_cast<pt2::Shader>(shader)->RemoveNotify(wc);
-            }
-        }
-    }
-}
-
-void RenderMgr::UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const
-{
-    for (int i = 0; i < static_cast<int>(RenderType::MAX_COUNT); ++i)
-    {
-        auto& rd = m_renderers[i];
-        if (!rd) {
-            continue;
-        }
-        for (auto& shader : rd->GetAllShaders()) {
-            if (shader->get_type() == rttr::type::get<pt3::Shader>()) {
-                std::static_pointer_cast<pt3::Shader>(shader)->RemoveNotify(wc);
-            }
-        }
-    }
-}
-
-void RenderMgr::Flush()
-{
-	auto shader = SetRenderer(m_curr_render);
+	auto shader = SetRenderer(dev, ctx, m_curr_render);
 	if (shader) {
-		shader->Flush();
+		shader->Flush(ctx);
 	}
 }
 

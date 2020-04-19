@@ -1,50 +1,68 @@
 #include "renderpipeline/ExternRenderer.h"
+#include "renderpipeline/Utility.h"
 
-#include <unirender/RenderContext.h>
-#include <unirender/Blackboard.h>
-#include <painting2/Shader.h>
+#include <unirender2/Device.h>
+#include <unirender2/Context.h>
+#include <unirender2/DrawState.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexArray.h>
+#include <unirender2/VertexBufferAttribute.h>
+#include <unirender2/IndexBuffer.h>
+#include <unirender2/VertexBuffer.h>
+#include <painting0/ModelMatUpdater.h>
 
 namespace rp
 {
 
-ExternRenderer::ExternRenderer()
+ExternRenderer::ExternRenderer(const ur2::Device& dev)
 {
-	InitRenderData();
+    m_va_tex = CreateVertexArray(dev);
+    m_va_no_tex = CreateVertexArray(dev);
 }
 
-ExternRenderer::~ExternRenderer()
+void ExternRenderer::DrawTexSpr(ur2::Context& ctx,
+                                const std::shared_ptr<ur2::ShaderProgram>& shader,
+                                const sm::mat4& mat) const
 {
-	ur::Blackboard::Instance()->GetRenderContext().ReleaseVAO(
-		m_vb_no_tex.vao, m_vb_no_tex.vbo, m_vb_no_tex.ebo);
-	ur::Blackboard::Instance()->GetRenderContext().ReleaseVAO(
-		m_vb_tex.vao, m_vb_tex.vbo, m_vb_tex.ebo);
+    auto model_updater = shader->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    if (model_updater) {
+        std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mat);
+    }
+
+    ur2::DrawState draw;
+    draw.program = shader;
+    draw.vertex_array = m_va_tex;
+    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
 }
 
-void ExternRenderer::Flush()
+void ExternRenderer::DrawNoTexSpr(ur2::Context& ctx,
+                                  const std::shared_ptr<ur2::ShaderProgram>& shader,
+                                  const sm::mat4& mat) const
 {
+    auto model_updater = shader->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    if (model_updater) {
+        std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mat);
+    }
+
+    ur2::DrawState draw;
+    draw.program = shader;
+    draw.vertex_array = m_va_no_tex;
+    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
 }
 
-void ExternRenderer::DrawTexSpr(const std::shared_ptr<pt2::Shader>& shader, const sm::mat4& mat) const
+void ExternRenderer::InitRenderData(const ur2::Device& dev)
 {
-    shader->UpdateModelMat(mat);
+    auto usage = ur2::BufferUsageHint::StaticDraw;
 
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-	rc.DrawElementsVAO(ur::DRAW_TRIANGLES, 0, 6, m_vb_tex.vao);
-}
-
-void ExternRenderer::DrawNoTexSpr(const std::shared_ptr<pt2::Shader>& shader, const sm::mat4& mat) const
-{
-    shader->UpdateModelMat(mat);
-
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-	rc.DrawElementsVAO(ur::DRAW_TRIANGLES, 0, 6, m_vb_no_tex.vao);
-}
-
-void ExternRenderer::InitRenderData()
-{
 	// tex
 	{
-		ur::RenderContext::VertexInfo vi;
+        m_va_tex = dev.CreateVertexArray();
+
+        unsigned short indices[] = { 0, 1, 2, 0, 2, 3 };
+        size_t ibuf_sz = sizeof(indices);
+        auto ibuf = dev.CreateIndexBuffer(usage, ibuf_sz);
+        ibuf->ReadFromMemory(indices, ibuf_sz, 0);
+        m_va_tex->SetIndexBuffer(ibuf);
 
 		float vertices[] = {
 			// pos          // tex
@@ -53,42 +71,49 @@ void ExternRenderer::InitRenderData()
 			 0.5f,  0.5f,   1.0f, 1.0f,
 			-0.5f,  0.5f,   0.0f, 1.0f,
 		};
-		vi.vn = 4;
-		vi.vertices = vertices;
-		vi.stride = 4 * sizeof(float);
+        size_t vbuf_sz = sizeof(vertices);
+        auto vbuf = dev.CreateVertexBuffer(usage, vbuf_sz);
+        vbuf->ReadFromMemory(vertices, vbuf_sz, 0);
+        m_va_tex->SetVertexBuffer(vbuf);
 
-		unsigned short indices[] = { 0, 1, 2, 0, 2, 3 };
-		vi.in = 6;
-		vi.indices = indices;
-
-		vi.va_list.push_back(ur::VertexAttrib("pos", 2, 4, 16, 0));
-		vi.va_list.push_back(ur::VertexAttrib("tex", 2, 4, 16, 8));
-
-		ur::Blackboard::Instance()->GetRenderContext().CreateVAO(
-			vi, m_vb_tex.vao, m_vb_tex.vbo, m_vb_tex.ebo);
+        std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
+        // pos
+        vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 2, 0, 16
+        );
+        // tex
+        vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 2, 8, 16
+        );
+        m_va_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}
 	// no tex
 	{
-		ur::RenderContext::VertexInfo vi;
+        m_va_no_tex = dev.CreateVertexArray();
+
+        unsigned short indices[] = { 0, 1, 2, 0, 2, 3 };
+        size_t ibuf_sz = sizeof(indices);
+        auto ibuf = dev.CreateIndexBuffer(usage, ibuf_sz);
+        ibuf->ReadFromMemory(indices, ibuf_sz, 0);
+        m_va_no_tex->SetIndexBuffer(ibuf);
 
 		float vertices[] = {
-			-0.5f, -0.5f,
-			 0.5f, -0.5f,
-			 0.5f,  0.5f,
-			-0.5f,  0.5f,
+            -0.5f, -0.5f,
+             0.5f, -0.5f,
+             0.5f,  0.5f,
+            -0.5f,  0.5f,
 		};
-		vi.vn = 4;
-		vi.vertices = vertices;
-		vi.stride = 4 * sizeof(float);
+        size_t vbuf_sz = sizeof(vertices);
+        auto vbuf = dev.CreateVertexBuffer(usage, vbuf_sz);
+        vbuf->ReadFromMemory(vertices, vbuf_sz, 0);
+        m_va_no_tex->SetVertexBuffer(vbuf);
 
-		unsigned short indices[] = { 0, 1, 2, 0, 2, 3 };
-		vi.in = 6;
-		vi.indices = indices;
-
-		vi.va_list.push_back(ur::VertexAttrib("pos", 2, 4, 8, 0));
-
-		ur::Blackboard::Instance()->GetRenderContext().CreateVAO(
-			vi, m_vb_no_tex.vao, m_vb_no_tex.vbo, m_vb_no_tex.ebo);
+        std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(1);
+        // pos
+        vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+            ur2::ComponentDataType::Float, 2, 0, 8
+        );
+        m_va_no_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}
 }
 

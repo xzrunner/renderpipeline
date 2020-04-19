@@ -1,14 +1,17 @@
 #pragma once
 
-#include <cstdint>
+#include <unirender2/typedef.h>
 
-namespace ur { class RenderContext; }
 namespace pt3 { struct GlobalIllumination; }
+namespace ur2 { class Device; class Context; class VertexArray; }
 
 namespace rp
 {
 
-void InitGIWithSkybox(ur::RenderContext& rc,
-    uint32_t skybox_id, pt3::GlobalIllumination& gi);
+void InitGIWithSkybox(const ur2::Device& dev, ur2::Context& ctx,
+    const ur2::TexturePtr skybox, pt3::GlobalIllumination& gi);
+
+std::shared_ptr<ur2::VertexArray>
+CreateVertexArray(const ur2::Device& dev);
 
 }

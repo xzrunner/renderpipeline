@@ -3,30 +3,41 @@
 #include "renderpipeline/CreatePrefilterCubemap.h"
 #include "renderpipeline/CreateBrdfLutTex.h"
 
-#include <unirender/Texture.h>
-#include <unirender/TextureCube.h>
+#include <unirender2/Device.h>
+#include <unirender2/VertexArray.h>
 #include <painting3/GlobalIllumination.h>
 
 namespace rp
 {
 
-void InitGIWithSkybox(ur::RenderContext& rc, uint32_t skybox_id, pt3::GlobalIllumination& gi)
+void InitGIWithSkybox(const ur2::Device& dev, ur2::Context& ctx,
+                      const ur2::TexturePtr skybox, pt3::GlobalIllumination& gi)
 {
     if (!gi.irradiance_map) {
-        gi.irradiance_map = std::make_shared<ur::TextureCube>(&rc);
+        gi.irradiance_map = CreateIrradianceCubemap(dev, ctx, skybox);
     }
-    auto tex_id = rp::CreateIrradianceCubemap(skybox_id);
-    gi.irradiance_map->SetTexID(tex_id);
-
     if (!gi.prefilter_map) {
-        gi.prefilter_map = std::make_shared<ur::TextureCube>(&rc);
+        gi.prefilter_map = CreatePrefilterCubemap(dev, ctx, skybox);
     }
-    tex_id = rp::CreatePrefilterCubemap(skybox_id);
-    gi.prefilter_map->SetTexID(tex_id);
+    if (!gi.brdf_lut) {
+        gi.brdf_lut = CreateBrdfLutTex(dev, ctx);
+    }
+}
 
-    tex_id = rp::CreateBrdfLutTex();
-    gi.brdf_lut = std::make_shared<ur::Texture>(&rc, rp::BRDF_LUT_TEX_SIZE,
-        rp::BRDF_LUT_TEX_SIZE, rp::BRDF_LUT_TEX_FMT, tex_id);
+std::shared_ptr<ur2::VertexArray>
+CreateVertexArray(const ur2::Device& dev)
+{
+    auto va = dev.CreateVertexArray();
+
+    auto usage = ur2::BufferUsageHint::StaticDraw;
+
+    auto ibuf = dev.CreateIndexBuffer(usage, 0);
+    va->SetIndexBuffer(ibuf);
+
+    auto vbuf = dev.CreateVertexBuffer(ur2::BufferUsageHint::StaticDraw, 0);
+    va->SetVertexBuffer(vbuf);
+
+    return va;
 }
 
 }

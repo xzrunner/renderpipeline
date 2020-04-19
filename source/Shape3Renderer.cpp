@@ -1,10 +1,13 @@
 #include "renderpipeline/Shape3Renderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/VertexAttrib.h>
-#include <unirender/RenderContext.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexArray.h>
+#include <unirender2/VertexBufferAttribute.h>
+#include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -18,25 +21,39 @@
 namespace rp
 {
 
-Shape3Renderer::Shape3Renderer()
+Shape3Renderer::Shape3Renderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
-void Shape3Renderer::Flush()
+void Shape3Renderer::Flush(ur2::Context& ctx)
 {
-    FlushBuffer(m_draw_mode, m_shaders[0]);
+    FlushBuffer(ctx, m_draw_mode, m_rs, m_shaders[0]);
 }
 
-void Shape3Renderer::DrawLines(size_t num, const float* positions, uint32_t color)
+void Shape3Renderer::DrawLines(ur2::Context& ctx, const ur2::RenderState& rs, size_t num,
+                               const float* positions, uint32_t color)
 {
-    if (m_draw_mode != ur::DRAW_LINES) {
-        Flush();
-        m_draw_mode = ur::DRAW_LINES;
+    if (m_buf.vertices.empty())
+    {
+        m_rs = rs;
+    }
+    else
+    {
+        if (m_rs != rs) {
+            Flush(ctx);
+            m_rs = rs;
+        }
+    }
+
+    if (m_draw_mode != ur2::PrimitiveType::Lines) {
+        Flush(ctx);
+        m_draw_mode = ur2::PrimitiveType::Lines;
     }
 
     if (m_buf.vertices.size() + num >= RenderBuffer<Shape3Vertex, unsigned short>::MAX_VERTEX_NUM) {
-        Flush();
+        Flush(ctx);
     }
 
     m_buf.Reserve(num, num);
@@ -55,15 +72,17 @@ void Shape3Renderer::DrawLines(size_t num, const float* positions, uint32_t colo
     m_buf.curr_index += static_cast<unsigned short>(num);
 }
 
-void Shape3Renderer::InitShader()
+void Shape3Renderer::InitShader(const ur2::Device& dev)
 {
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
 	// layout
-	std::vector<ur::VertexAttrib> layout;
-	layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 3, sizeof(float),    16, 0));
-	layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    4, sizeof(uint8_t),  16, 12));
-	rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 16
+    );
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Byte, 4, 12, 16
+    );
+    m_va->SetVertexBufferAttrs(vbuf_attrs);
 
 	// vert
 	std::vector<sw::NodePtr> vert_nodes;
@@ -104,16 +123,13 @@ void Shape3Renderer::InitShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
 
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-
-    m_shaders.push_back(std::make_shared<pt3::Shader>(&rc, sp));
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
 }

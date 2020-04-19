@@ -2,27 +2,37 @@
 
 #include <heightfield/HeightField.h>
 #include <painting0/Shader.h>
+#include <painting0/ModelMatUpdater.h>
+#include <unirender2/ShaderProgram.h>
 
 namespace rp
 {
+
+HeightfieldRenderer::HeightfieldRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
+{
+}
 
 void HeightfieldRenderer::Clear()
 {
     m_hf.reset();
 }
 
-void HeightfieldRenderer::Draw(const sm::mat4& mt) const
+void HeightfieldRenderer::Draw(ur2::Context& ctx, const sm::mat4& mt) const
 {
     if (m_shaders.empty() || !m_hf) {
         return;
     }
 
-    m_shaders[0]->UpdateModelMat(mt);
+    auto model_updater = m_shaders[0]->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    if (model_updater) {
+        std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mt);
+    }
 
-    DrawVertBuf();
+    DrawVertBuf(ctx);
 }
 
-void HeightfieldRenderer::BuildVertBuf()
+void HeightfieldRenderer::BuildVertBuf(ur2::Context& ctx)
 {
     const auto w = m_hf->Width();
     const auto h = m_hf->Height();
@@ -53,19 +63,18 @@ void HeightfieldRenderer::BuildVertBuf()
     }
 
     assert(m_shaders.size() == 1);
-    FlushBuffer(ur::DRAW_TRIANGLES, m_shaders[0]);
+    ur2::RenderState rs;
+    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, rs, m_shaders[0]);
 }
 
-void HeightfieldRenderer::DrawVertBuf() const
+void HeightfieldRenderer::DrawVertBuf(ur2::Context& ctx) const
 {
     assert(m_shaders.size() == 1);
-    m_shaders[0]->Use();
 
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-    rc.BindBuffer(ur::INDEXBUFFER, m_ebo);
-    rc.BindBuffer(ur::VERTEXBUFFER, m_vbo);
-    size_t n = (m_hf->Width() - 1) * (m_hf->Height() - 1) * 6;
-    rc.DrawElements(ur::DRAW_TRIANGLES, 0, n, false);
+    ur2::DrawState draw;
+    draw.program = m_shaders[0];
+    draw.vertex_array = m_va;
+    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
 }
 
 }

@@ -36,14 +36,17 @@ struct HeightfieldVertex
 class HeightfieldRenderer : public rp::IRenderer, public rp::RendererImpl<HeightfieldVertex, uint32_t>, private boost::noncopyable
 {
 public:
-    virtual void Clear();
-    virtual void Setup(const std::shared_ptr<hf::HeightField>& hf) = 0;
+    HeightfieldRenderer(const ur2::Device& dev);
 
-    void Draw(const sm::mat4& mt = sm::mat4()) const;
+    virtual void Clear();
+    virtual void Setup(const ur2::Device& dev, ur2::Context& ctx,
+        const std::shared_ptr<hf::HeightField>& hf) = 0;
+
+    void Draw(ur2::Context& ctx, const sm::mat4& mt = sm::mat4()) const;
 
 protected:
-    void BuildVertBuf();
-    void DrawVertBuf() const;
+    void BuildVertBuf(ur2::Context& ctx);
+    void DrawVertBuf(ur2::Context& ctx) const;
 
 protected:
     std::shared_ptr<hf::HeightField> m_hf = nullptr;

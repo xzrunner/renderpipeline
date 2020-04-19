@@ -2,59 +2,52 @@
 
 #include "renderpipeline/RendererImpl.inl"
 #include "renderpipeline/UniformNames.h"
+#include "renderpipeline/Utility.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
+#include <unirender2/Device.h>
+#include <unirender2/Context.h>
+#include <unirender2/IndexBuffer.h>
+#include <unirender2/VertexBuffer.h>
+#include <unirender2/DrawState.h>
+#include <unirender2/VertexArray.h>
 
 namespace rp
 {
 
 template<typename VT, typename IT>
-RendererImpl<typename VT, typename IT>::RendererImpl()
+RendererImpl<typename VT, typename IT>::RendererImpl(const ur2::Device& dev)
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-    m_vbo = rc.CreateBuffer(ur::VERTEXBUFFER, nullptr, 0);
-    m_ebo = rc.CreateBuffer(ur::INDEXBUFFER, nullptr, 0);
+    m_va = CreateVertexArray(dev);
 }
 
 template<typename VT, typename IT>
-RendererImpl<typename VT, typename IT>::~RendererImpl()
-{
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-    rc.ReleaseBuffer(ur::VERTEXBUFFER, m_vbo);
-    rc.ReleaseBuffer(ur::INDEXBUFFER, m_ebo);
-}
-
-template<typename VT, typename IT>
-void RendererImpl<typename VT, typename IT>::FlushBuffer(ur::DRAW_MODE mode, const std::shared_ptr<pt0::Shader>& shader)
+void RendererImpl<typename VT, typename IT>::
+FlushBuffer(ur2::Context& ctx, ur2::PrimitiveType mode,
+            const ur2::RenderState& rs, const std::shared_ptr<ur2::ShaderProgram>& shader)
 {
 	if (m_buf.indices.empty()) {
 		return;
 	}
 
-	shader->Use();
-	if (m_buf.indices.empty()) {
-		return;
-	}
+    auto ibuf_sz = sizeof(IT) * m_buf.indices.size();
+    auto ibuf = m_va->GetIndexBuffer();
+    ibuf->Reserve(ibuf_sz);
+    ibuf->ReadFromMemory(m_buf.indices.data(), ibuf_sz, 0);
 
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-	rc.BindTexture(m_tex_id, 0);
-	if (m_buf.indices.empty()) {
-		return;
-	}
+    auto vbuf_sz = sizeof(VT) * m_buf.vertices.size();
+    auto vbuf = m_va->GetVertexBuffer();
+    vbuf->Reserve(vbuf_sz);
+    vbuf->ReadFromMemory(m_buf.vertices.data(), vbuf_sz, 0);
 
-	shader->SetMat4(MODEL_MAT_NAME, sm::mat4().x);
-//    shader->UpdateModelMat(sm::mat4().x);
+    // todo
+    //rc.BindTexture(m_tex_id, 0);
+    //shader->SetMat4(MODEL_MAT_NAME, sm::mat4().x);
 
-	rc.BindBuffer(ur::VERTEXBUFFER, m_vbo);
-	size_t vbuf_sz = sizeof(VT) * m_buf.vertices.size();
-	rc.UpdateBuffer(m_vbo, m_buf.vertices.data(), vbuf_sz);
-
-	rc.BindBuffer(ur::INDEXBUFFER, m_ebo);
-	size_t ibuf_sz = sizeof(IT) * m_buf.indices.size();
-	rc.UpdateBuffer(m_ebo, m_buf.indices.data(), ibuf_sz);
-
-	rc.DrawElements(mode, 0, m_buf.indices.size());
+    ur2::DrawState draw;
+    draw.render_state = rs;
+    draw.program = shader;
+    draw.vertex_array = m_va;
+    ctx.Draw(mode, draw, nullptr);
 
 	m_buf.Clear();
 }

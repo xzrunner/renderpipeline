@@ -2,9 +2,8 @@
 
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
-#include <unirender/VertexAttrib.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexBufferAttribute.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -22,8 +21,12 @@
 #include <shaderweaver/node/Multiply.h>
 #include <shaderweaver/node/VertexShader.h>
 #include <shaderweaver/node/FragmentShader.h>
+#include <painting0/ModelMatUpdater.h>
+#include <painting0/CamPosUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/MaterialMgr.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <model/MeshGeometry.h>
 #include <model/typedef.h>
 
@@ -46,22 +49,18 @@ enum ShaderType
 namespace rp
 {
 
-SkinRenderer::SkinRenderer()
+SkinRenderer::SkinRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
-void SkinRenderer::Flush()
-{
-}
-
-void SkinRenderer::Draw(const model::Model& model,
+void SkinRenderer::Draw(ur2::Context& ur_ctx,
+                        const model::Model& model,
                         const model::Model::Mesh& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx) const
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     auto& geo = mesh.geometry;
 
     bool do_tex_map = false;
@@ -74,45 +73,54 @@ void SkinRenderer::Draw(const model::Model& model,
     }
 
     auto shader = do_tex_map ? m_shaders[SHADER_TEX_MAP] : m_shaders[SHADER_NO_TEX_MAP];
-    shader->Use();
+    shader->Bind();
 
-	auto mode = shader->GetDrawMode();
+	//auto mode = shader->GetDrawMode();
 
     material.Bind(*shader);
     ctx.Bind(*shader);
 
+    ur2::DrawState draw;
+    draw.program = shader;
+    draw.vertex_array = geo.vertex_array;
 	for (auto& sub : geo.sub_geometries)
 	{
-		if (sub.index) {
-			rc.DrawElementsVAO(mode, sub.offset, sub.count, geo.vao);
-		} else {
-			rc.DrawArraysVAO(mode, sub.offset, sub.count, geo.vao);
-		}
+        draw.offset = sub.offset;
+        draw.count = sub.count;
+        ur_ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
 	}
 }
 
-void SkinRenderer::InitShader()
+void SkinRenderer::InitShader(const ur2::Device& dev)
 {
     m_shaders.resize(SHADER_MAX_COUNT);
-    m_shaders[SHADER_TEX_MAP]    = BuildShader(true);
-    m_shaders[SHADER_NO_TEX_MAP] = BuildShader(false);
+    m_shaders[SHADER_TEX_MAP]    = BuildShader(dev, true);
+    m_shaders[SHADER_NO_TEX_MAP] = BuildShader(dev, false);
 }
 
-std::shared_ptr<pt0::Shader> SkinRenderer::BuildShader(bool tex_map)
+std::shared_ptr<ur2::ShaderProgram>
+SkinRenderer::BuildShader(const ur2::Device& dev, bool tex_map)
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<ur::VertexAttrib> layout;
-    layout.emplace_back(VERT_POSITION_NAME, 3, 4, 40, 0);
-    layout.emplace_back(VERT_NORMAL_NAME,   3, 4, 40, 12);
-    layout.emplace_back(VERT_TEXCOORD_NAME, 2, 4, 40, 24);
-    layout.emplace_back(BLEND_INDICES_NAME, 4, 1, 40, 32);
-    layout.emplace_back(BLEND_WEIGHTS_NAME, 4, 1, 40, 36);
-    rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(5);
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 40
+    );
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 12, 40
+    );
+    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 24, 40
+    );
+    vbuf_attrs[3] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Byte, 4, 32, 40
+    );
+    vbuf_attrs[4] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Byte, 4, 36, 40
+    );
 
     //////////////////////////////////////////////////////////////////////////
     // vert
@@ -256,17 +264,12 @@ std::shared_ptr<pt0::Shader> SkinRenderer::BuildShader(bool tex_map)
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
-
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
-
-	return std::make_shared<pt3::Shader>(&rc, sp);
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt0::CamPosUpdater>(*shader, sw::node::CameraPos::CamPosName()));
+    return shader;
 }
 
 }

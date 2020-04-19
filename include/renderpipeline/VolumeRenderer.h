@@ -20,17 +20,22 @@ struct VolumeVertex
 class VolumeRenderer : public IRenderer, private RendererImpl<VolumeVertex, unsigned short>, private boost::noncopyable
 {
 public:
-	VolumeRenderer();
+	VolumeRenderer(const ur2::Device& dev);
 
-	virtual void Flush() override;
+	virtual void Flush(ur2::Context& ctx) override;
 
-	void DrawCube(const float* positions, const float* texcoords, int texid, uint32_t color);
+	void DrawCube(ur2::Context& ctx, const ur2::RenderState& rs,
+        const float* positions, const float* texcoords, int texid, uint32_t color);
 
 private:
-	void InitShader();
+	void InitShader(const ur2::Device& dev);
 
-	void PrepareRenderState();
-	void RestoreRenderState();
+	static void PrepareRenderState(ur2::RenderState& rs);
+
+private:
+    int m_tex_id = 0;
+
+    ur2::RenderState m_rs;
 
 }; // VolumeRenderer
 

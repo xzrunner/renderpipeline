@@ -1,11 +1,14 @@
 #include "renderpipeline/MorphRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender/Blackboard.h>
-#include <unirender/RenderContext.h>
-#include <unirender/VertexAttrib.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexBufferAttribute.h>
+#include <painting0/ModelMatUpdater.h>
+#include <painting0/CamPosUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/MaterialMgr.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -34,31 +37,44 @@ const char* VERT_POSE2_NORMAL_NAME = "pose2_normal";
 namespace rp
 {
 
-MorphRenderer::MorphRenderer()
+MorphRenderer::MorphRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
 void MorphRenderer::Draw() const
 {
-    m_shaders[0]->Use();
+    m_shaders[0]->Bind();
 }
 
-void MorphRenderer::InitShader()
+void MorphRenderer::InitShader(const ur2::Device& dev)
 {
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<ur::VertexAttrib> layout;
-	layout.emplace_back(VERT_POSE1_VERTEX_NAME, 3, 4, 24,  0);
-	layout.emplace_back(VERT_POSE1_NORMAL_NAME, 3, 4, 24, 12);
-	layout.emplace_back(VERT_POSE2_VERTEX_NAME, 3, 4, 24,  0);
-	layout.emplace_back(VERT_POSE2_NORMAL_NAME, 3, 4, 24, 12);
-	layout.emplace_back(VERT_TEXCOORD_NAME,     2, 4,  0,  0);
-    rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    // VERT_POSE1_VERTEX_NAME
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 24
+    );
+    // VERT_POSE1_NORMAL_NAME
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 12, 24
+    );
+    // VERT_TEXCOORD_NAME
+    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 0, 0
+    );
+
+ //   std::vector<ur::VertexAttrib> layout;
+	//layout.emplace_back(VERT_POSE1_VERTEX_NAME, 3, 4, 24,  0);
+	//layout.emplace_back(VERT_POSE1_NORMAL_NAME, 3, 4, 24, 12);
+	//layout.emplace_back(VERT_POSE2_VERTEX_NAME, 3, 4, 24,  0);
+	//layout.emplace_back(VERT_POSE2_NORMAL_NAME, 3, 4, 24, 12);
+	//layout.emplace_back(VERT_TEXCOORD_NAME,     2, 4,  0,  0);
+ //   rc.CreateVertexLayout(layout);
 
     //////////////////////////////////////////////////////////////////////////
     // vert
@@ -151,17 +167,14 @@ void MorphRenderer::InitShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt3::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt0::CamPosUpdater>(*shader, sw::node::CameraPos::CamPosName()));
 
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::CamPos,   sw::node::CameraPos::CamPosName());
-
-    m_shaders.push_back(std::make_shared<pt3::Shader>(&rc, sp));
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
 }

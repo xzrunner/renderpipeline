@@ -1,13 +1,12 @@
 #pragma once
 
-#include <unirender/typedef.h>
+#include <unirender2/typedef.h>
+
+namespace ur2 { class Device; class Context; }
 
 namespace rp
 {
 
-static const int BRDF_LUT_TEX_SIZE = 512;
-static const ur::TEXTURE_FORMAT BRDF_LUT_TEX_FMT = ur::TEXTURE_RG16F;
-
-unsigned int CreateBrdfLutTex();
+ur2::TexturePtr CreateBrdfLutTex(const ur2::Device& dev, ur2::Context& ctx);
 
 }

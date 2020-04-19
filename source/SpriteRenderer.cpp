@@ -6,9 +6,14 @@
 #include <SM_Rect.h>
 #include <tessellation/Painter.h>
 #include <tessellation/Palette.h>
-#include <unirender/Blackboard.h>
-#include <unirender/VertexAttrib.h>
-#include <unirender/RenderContext.h>
+#include <painting0/ModelMatUpdater.h>
+#include <painting2/Shader.h>
+#include <painting2/ViewMatUpdater.h>
+#include <painting2/ProjectMatUpdater.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/VertexBufferAttribute.h>
+#include <unirender2/Texture.h>
+#include <unirender2/TextureTarget.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -19,7 +24,6 @@
 #include <shaderweaver/node/Multiply.h>
 #include <shaderweaver/node/VertexShader.h>
 #include <shaderweaver/node/FragmentShader.h>
-#include <painting2/Shader.h>
 
 namespace
 {
@@ -46,28 +50,47 @@ void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex, 
 namespace rp
 {
 
-SpriteRenderer::SpriteRenderer()
+SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
+    : RendererImpl(dev)
 {
-	InitShader();
+	InitShader(dev);
 
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-	m_palette = std::make_unique<tess::Palette>(&rc);
+	m_palette = std::make_unique<tess::Palette>(dev);
+
+    m_rs.depth_test.enabled = false;
+    m_rs.facet_culling.enabled = false;
 }
 
-void SpriteRenderer::Flush()
+void SpriteRenderer::Flush(ur2::Context& ctx)
 {
-    FlushBuffer(ur::DRAW_TRIANGLES, m_shaders[0]);
+    ctx.BindTexture(0, ur2::TextureTarget::Texture2D, m_tex_id);
+
+    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, m_rs, m_shaders[0]);
 }
 
-void SpriteRenderer::DrawQuad(const float* positions, const float* texcoords, int texid, uint32_t color)
+void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
+                              const float* positions, const float* texcoords,
+                              int tex_id, uint32_t color)
 {
-	if (m_tex_id != texid) {
-		Flush();
-		m_tex_id = texid;
+    if (m_buf.vertices.empty())
+    {
+        m_rs = rs;
+    }
+    else
+    {
+        if (m_rs != rs) {
+            Flush(ctx);
+            m_rs = rs;
+        }
+    }
+
+	if (m_tex_id != tex_id) {
+		Flush(ctx);
+        m_tex_id = tex_id;
 	}
 
     if (m_buf.vertices.size() + 4 >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
-        Flush();
+        Flush(ctx);
     }
 
 	m_buf.Reserve(6, 4);
@@ -96,21 +119,35 @@ void SpriteRenderer::DrawQuad(const float* positions, const float* texcoords, in
 	m_buf.curr_index += 4;
 }
 
-void SpriteRenderer::DrawPainter(const tess::Painter& pt, const sm::mat4& mat)
+void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
+                                 const tess::Painter& pt, const sm::mat4& mat)
 {
 	if (pt.IsEmpty()) {
 		return;
 	}
 
-	if (m_palette->GetTexID() == m_tex_id)
+    if (m_buf.vertices.empty())
+    {
+        m_rs = rs;
+    }
+    else
+    {
+        if (m_rs != rs) {
+            Flush(ctx);
+            m_rs = rs;
+        }
+    }
+
+	if (m_palette->GetTexture()->GetTexID() == m_tex_id)
 	{
 		copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 	}
 	else
 	{
-		int tex_id = m_palette->GetTexID();
-		int tex_w = m_palette->GetTexWidth();
-		int tex_h = m_palette->GetTexHeight();
+        auto p_tex = m_palette->GetTexture();
+		int tex_id = p_tex->GetTexID();
+		int tex_w = p_tex->GetWidth();
+		int tex_h = p_tex->GetHeight();
 		sm::irect qr(0, 0, tex_w, tex_h);
 		int cached_texid;
 		auto cached_texcoords = Callback::QueryCachedTexQuad(tex_id, qr, cached_texid);
@@ -118,12 +155,12 @@ void SpriteRenderer::DrawPainter(const tess::Painter& pt, const sm::mat4& mat)
 		{
 			if (cached_texid != m_tex_id)
 			{
-				Flush();
+				Flush(ctx);
 				m_tex_id = cached_texid;
 			}
 
             if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
-                Flush();
+                Flush(ctx);
             }
 
 			copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
@@ -147,32 +184,39 @@ void SpriteRenderer::DrawPainter(const tess::Painter& pt, const sm::mat4& mat)
 		{
 			Callback::AddCacheSymbol(tex_id, tex_w, tex_h, qr);
 
-			Flush();
-			m_tex_id = m_palette->GetTexID();
+			Flush(ctx);
+            m_tex_id = m_palette->GetTexture()->GetTexID();
 			copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 		}
 	}
 }
 
-void SpriteRenderer::InitShader()
+void SpriteRenderer::InitShader(const ur2::Device& dev)
 {
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
-
 	// layout
-	std::vector<ur::VertexAttrib> layout;
-	layout.push_back(ur::VertexAttrib(VERT_POSITION_NAME, 2, sizeof(float),    20, 0));
-	layout.push_back(ur::VertexAttrib(VERT_TEXCOORD_NAME, 2, sizeof(float),    20, 8));
-	layout.push_back(ur::VertexAttrib(VERT_COLOR_NAME,    4, sizeof(uint8_t),  20, 16));
-	rc.CreateVertexLayout(layout);
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    // vec2 position
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 0, 20
+    );
+    // vec2 texcoord
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 8, 20
+    );
+    // vec4 color
+    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Byte, 4, 16, 20
+    );
+    m_va->SetVertexBufferAttrs(vbuf_attrs);
 
 	// vert
 	std::vector<sw::NodePtr> vert_nodes;
 
-	auto projection = std::make_shared<sw::node::ShaderUniform>(PROJ_MAT_NAME, sw::t_mat4);
-	auto view       = std::make_shared<sw::node::ShaderUniform>(VIEW_MAT_NAME,       sw::t_mat4);
-	auto model      = std::make_shared<sw::node::ShaderUniform>(MODEL_MAT_NAME,      sw::t_mat4);
+	auto projection = std::make_shared<sw::node::ShaderUniform>(PROJ_MAT_NAME,  sw::t_mat4);
+	auto view       = std::make_shared<sw::node::ShaderUniform>(VIEW_MAT_NAME,  sw::t_mat4);
+	auto model      = std::make_shared<sw::node::ShaderUniform>(MODEL_MAT_NAME, sw::t_mat4);
 
-	auto position   = std::make_shared<sw::node::ShaderInput>  (VERT_POSITION_NAME,     sw::t_pos2);
+	auto position   = std::make_shared<sw::node::ShaderInput>  (VERT_POSITION_NAME, sw::t_pos2);
 
 	auto pos_trans = std::make_shared<sw::node::PositionTrans>(2);
 	sw::make_connecting({ projection, 0 }, { pos_trans, sw::node::PositionTrans::ID_PROJ });
@@ -219,16 +263,18 @@ void SpriteRenderer::InitShader()
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-	std::vector<std::string> texture_names;
-	pt2::Shader::Params sp(texture_names, layout);
-	sp.vs = vert.GenShaderStr().c_str();
-	sp.fs = frag.GenShaderStr().c_str();
+    std::vector<std::string> attr_names = {
+        "position",
+        "texcoord",
+        "color",
+    };
+    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr(), "", attr_names);
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
 
-	sp.uniform_names.Add(pt0::UniformTypes::ModelMat, MODEL_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  VIEW_MAT_NAME);
-	sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  PROJ_MAT_NAME);
-
-    m_shaders.push_back(std::make_shared<pt2::Shader>(&rc, sp));
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
 }

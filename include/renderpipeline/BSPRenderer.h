@@ -7,6 +7,8 @@
 
 #include <boost/noncopyable.hpp>
 
+namespace ur2 { class Device; }
+
 namespace rp
 {
 
@@ -20,14 +22,14 @@ struct BSPVertex
 class BSPRenderer : public IRenderer, private RendererImpl<BSPVertex, unsigned short>, private boost::noncopyable
 {
 public:
-    BSPRenderer();
+    BSPRenderer(const ur2::Device& dev);
 
-    virtual void Flush() override {}
+    virtual void Flush(ur2::Context& ctx) override {}
 
     void Draw() const;
 
 private:
-    void InitShader();
+    void InitShader(const ur2::Device& dev);
 
 }; // BSPRenderer
 

@@ -2,11 +2,18 @@
 
 #include "renderpipeline/RenderBuffer.h"
 
-#include <unirender/typedef.h>
+#include <unirender2/PrimitiveType.h>
 
 #include <memory>
 
-namespace pt0 { class Shader; }
+namespace ur2
+{
+    class Device;
+    class Context;
+    class ShaderProgram;
+    class VertexArray;
+    struct RenderState;
+}
 
 namespace rp
 {
@@ -15,19 +22,18 @@ template<typename VT, typename IT>
 class RendererImpl
 {
 public:
-    RendererImpl();
-    ~RendererImpl();
+    RendererImpl(const ur2::Device& dev);
 
 protected:
-    void FlushBuffer(ur::DRAW_MODE mode,
-        const std::shared_ptr<pt0::Shader>& shader);
+    void FlushBuffer(ur2::Context& ctx,  ur2::PrimitiveType mode,
+        const ur2::RenderState& rs, const std::shared_ptr<ur2::ShaderProgram>& shader);
 
 protected:
     RenderBuffer<VT, IT> m_buf;
 
-    uint32_t m_vbo = 0, m_ebo = 0;
+    std::shared_ptr<ur2::VertexArray> m_va = nullptr;
 
-    uint32_t m_tex_id = 0;
+ //   uint32_t m_tex_id = 0;
 
 }; // RendererImpl
 

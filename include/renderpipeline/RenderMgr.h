@@ -7,6 +7,7 @@
 
 namespace pt2 { class WindowContext; }
 namespace pt3 { class WindowContext; }
+namespace ur2 { class Device; class Context; }
 
 namespace rp
 {
@@ -33,15 +34,17 @@ enum class RenderType
 class RenderMgr
 {
 public:
-	std::shared_ptr<IRenderer> SetRenderer(RenderType type);
-    std::shared_ptr<IRenderer> GetRenderer(RenderType type);
+	std::shared_ptr<IRenderer>
+        SetRenderer(const ur2::Device& dev, ur2::Context& ctx, RenderType type);
+    std::shared_ptr<IRenderer>
+        GetRenderer(RenderType type);
 
-    void BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
-    void BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
-    void UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
-    void UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
+    //void BindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
+    //void BindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
+    //void UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
+    //void UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
 
-	void Flush();
+	void Flush(const ur2::Device& dev, ur2::Context& ctx);
 
 private:
 	std::array<std::shared_ptr<IRenderer>, static_cast<int>(RenderType::MAX_COUNT)> m_renderers;

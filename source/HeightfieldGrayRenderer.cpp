@@ -1,11 +1,15 @@
 #include "renderpipeline/HeightfieldGrayRenderer.h"
 
 #include <heightfield/HeightField.h>
-#include <unirender/Blackboard.h>
-#include <unirender/VertexAttrib.h>
-#include <unirender/RenderContext.h>
+#include <unirender2/Texture.h>
+#include <unirender2/ShaderProgram.h>
+#include <unirender2/ComponentDataType.h>
+#include <unirender2/VertexBufferAttribute.h>
 #include <renderpipeline/UniformNames.h>
 #include <painting0/ShaderUniforms.h>
+#include <painting0/ModelMatUpdater.h>
+#include <painting3/ViewMatUpdater.h>
+#include <painting3/ProjectMatUpdater.h>
 #include <painting3/Shader.h>
 #include <model/TextureLoader.h>
 
@@ -93,12 +97,14 @@ void main()
 namespace rp
 {
 
-HeightfieldGrayRenderer::HeightfieldGrayRenderer()
+HeightfieldGrayRenderer::HeightfieldGrayRenderer(const ur2::Device& dev)
+    : HeightfieldRenderer(dev)
 {
-    InitShader();
+    InitShader(dev);
 }
 
-void HeightfieldGrayRenderer::Setup(const std::shared_ptr<hf::HeightField>& hf)
+void HeightfieldGrayRenderer::Setup(const ur2::Device& dev, ur2::Context& ctx,
+                                    const std::shared_ptr<hf::HeightField>& hf)
 {
     m_hf = hf;
     if (!m_hf) {
@@ -107,37 +113,32 @@ void HeightfieldGrayRenderer::Setup(const std::shared_ptr<hf::HeightField>& hf)
 
     assert(hf);
     auto old = m_height_map;
-    m_height_map = hf->GetHeightmap();
+    m_height_map = hf->GetHeightmap(dev);
 
 #ifdef BUILD_NORMAL_MAP
-    auto& rc = ur::Blackboard::Instance()->GetRenderContext();
     m_normal_map = terraingraph::TextureBaker::GenNormalMap(*hf, rc);
 #endif // BUILD_NORMAL_MAP
 
     // textures
-    std::vector<uint32_t> texture_ids;
-    texture_ids.push_back(m_height_map->TexID());
+    m_height_map->Bind();
 #ifdef BUILD_NORMAL_MAP
-    texture_ids.push_back(m_normal_map->TexID());
+    m_normal_map->Bind();
 #endif // BUILD_NORMAL_MAP
-
-    assert(m_shaders.size() == 1);
-    m_shaders.front()->SetUsedTextures(texture_ids);
 
     // vertex buffer
     if (!old ||
-        old->Width() != m_height_map->Width() ||
-        old->Height() != m_height_map->Height()) {
-        BuildVertBuf();
+        old->GetWidth() != m_height_map->GetWidth() ||
+        old->GetHeight() != m_height_map->GetHeight()) {
+        BuildVertBuf(ctx);
     }
 
     // bind shader
     auto shader = m_shaders.front();
-    shader->Use();
+    shader->Bind();
 
     // update uniforms
     pt0::ShaderUniforms vals;
-    sm::vec2 inv_res(1.0f / m_height_map->Width(), 1.0f / m_height_map->Height());
+    sm::vec2 inv_res(1.0f / m_height_map->GetWidth(), 1.0f / m_height_map->GetHeight());
     vals.AddVar("u_inv_res", pt0::RenderVariant(inv_res));
     vals.Bind(*shader);
 }
@@ -149,39 +150,35 @@ void HeightfieldGrayRenderer::Clear()
     m_height_map.reset();
 }
 
-void HeightfieldGrayRenderer::InitShader()
+void HeightfieldGrayRenderer::InitShader(const ur2::Device& dev)
 {
-	auto& rc = ur::Blackboard::Instance()->GetRenderContext();
+    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
+    // rp::VERT_POSITION_NAME
+    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 3, 0, 20
+    );
+    // rp::VERT_TEXCOORD_NAME
+    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
+        ur2::ComponentDataType::Float, 2, 12, 20
+    );
+    m_va->SetVertexBufferAttrs(vbuf_attrs);
 
-    std::vector<ur::VertexAttrib> layout;
-    layout.push_back(ur::VertexAttrib(rp::VERT_POSITION_NAME, 3, 4, 20, 0));
-    layout.push_back(ur::VertexAttrib(rp::VERT_TEXCOORD_NAME, 2, 4, 20, 12));
-    rc.CreateVertexLayout(layout);
-
-    std::vector<std::string> texture_names;
-    texture_names.push_back("u_heightmap");
 #ifdef BUILD_NORMAL_MAP
-    texture_names.push_back("u_normal_map");
-#endif // BUILD_NORMAL_MAP
-
-    pt3::Shader::Params sp(texture_names, layout);
-#ifdef BUILD_NORMAL_MAP
-    std::string _vs = "#define BUILD_NORMAL_MAP\n" + std::string(vs);
-    std::string _fs = "#define BUILD_NORMAL_MAP\n" + std::string(fs);
-    sp.vs = _vs.c_str();
-    sp.fs = _fs.c_str();
+    auto shader = dev.CreateShaderProgram(
+        "#define BUILD_NORMAL_MAP\n" + std::string(vs),
+        "#define BUILD_NORMAL_MAP\n" + std::string(fs)
+    );
 #else
-    sp.vs = vs;
-    sp.fs = fs;
+    auto shader = dev.CreateShaderProgram(vs, fs);
 #endif // BUILD_NORMAL_MAP
 
-    sp.uniform_names.Add(pt0::UniformTypes::ModelMat, rp::MODEL_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::ViewMat,  rp::VIEW_MAT_NAME);
-    sp.uniform_names.Add(pt0::UniformTypes::ProjMat,  rp::PROJ_MAT_NAME);
-    //sp.uniform_names.Add(pt0::UniformTypes::CamPos, sw::node::CameraPos::CamPosName());
 
-    auto shader = std::make_shared<pt3::Shader>(&rc, sp);
-    m_shaders.push_back(shader);
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+
+    m_shaders.resize(1);
+    m_shaders[0] = shader;
 }
 
 }
