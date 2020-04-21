@@ -80,7 +80,7 @@ void Shape3Renderer::InitShader(const ur2::Device& dev)
         ur2::ComponentDataType::Float, 3, 0, 16
     );
     vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Byte, 4, 12, 16
+        ur2::ComponentDataType::UnsignedByte, 4, 12, 16
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

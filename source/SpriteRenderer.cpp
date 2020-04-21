@@ -205,7 +205,7 @@ void SpriteRenderer::InitShader(const ur2::Device& dev)
     );
     // vec4 color
     vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Byte, 4, 16, 20
+        ur2::ComponentDataType::UnsignedByte, 4, 16, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

@@ -116,10 +116,10 @@ SkinRenderer::BuildShader(const ur2::Device& dev, bool tex_map)
         ur2::ComponentDataType::Float, 2, 24, 40
     );
     vbuf_attrs[3] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Byte, 4, 32, 40
+        ur2::ComponentDataType::UnsignedByte, 4, 32, 40
     );
     vbuf_attrs[4] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Byte, 4, 36, 40
+        ur2::ComponentDataType::UnsignedByte, 4, 36, 40
     );
 
     //////////////////////////////////////////////////////////////////////////

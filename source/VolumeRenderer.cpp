@@ -96,7 +96,7 @@ void VolumeRenderer::InitShader(const ur2::Device& dev)
         ur2::ComponentDataType::Float, 3, 12, 28
     );
     vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Byte, 4, 24, 28
+        ur2::ComponentDataType::UnsignedByte, 4, 24, 28
     );
 
 	// vert
