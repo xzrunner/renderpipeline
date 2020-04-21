@@ -59,6 +59,12 @@ SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
 
     m_rs.depth_test.enabled = false;
     m_rs.facet_culling.enabled = false;
+
+    m_rs.blending.enabled = true;
+    m_rs.blending.separately = false;
+    m_rs.blending.src = ur2::BlendingFactor::One;
+    m_rs.blending.dst = ur2::BlendingFactor::OneMinusSrcAlpha;
+    m_rs.blending.equation = ur2::BlendEquation::Add;
 }
 
 void SpriteRenderer::Flush(ur2::Context& ctx)
