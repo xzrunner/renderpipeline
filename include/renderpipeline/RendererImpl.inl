@@ -31,12 +31,12 @@ FlushBuffer(ur2::Context& ctx, ur2::PrimitiveType mode,
 
     auto ibuf_sz = sizeof(IT) * m_buf.indices.size();
     auto ibuf = m_va->GetIndexBuffer();
-    ibuf->Reserve(ibuf_sz);
+    ibuf->Reset(ibuf_sz);
     ibuf->ReadFromMemory(m_buf.indices.data(), ibuf_sz, 0);
 
     auto vbuf_sz = sizeof(VT) * m_buf.vertices.size();
     auto vbuf = m_va->GetVertexBuffer();
-    vbuf->Reserve(vbuf_sz);
+    vbuf->Reset(vbuf_sz);
     vbuf->ReadFromMemory(m_buf.vertices.data(), vbuf_sz, 0);
 
     // todo
