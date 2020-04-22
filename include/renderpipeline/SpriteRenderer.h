@@ -13,7 +13,7 @@ namespace tess { class Painter; class Palette; }
 
 namespace rp
 {
-    
+
 struct SpriteVertex
 {
 	sm::vec2 pos;
@@ -45,6 +45,7 @@ private:
     int m_tex_id = 0;
 
     ur2::RenderState m_rs;
+    std::shared_ptr<ur2::Framebuffer> m_fbo = nullptr;
 
 }; // SpriteRenderer
 

@@ -62,7 +62,7 @@ SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
 
     m_rs.blending.enabled = true;
     m_rs.blending.separately = false;
-    m_rs.blending.src = ur2::BlendingFactor::One;
+    m_rs.blending.src = ur2::BlendingFactor::SrcAlpha;
     m_rs.blending.dst = ur2::BlendingFactor::OneMinusSrcAlpha;
     m_rs.blending.equation = ur2::BlendEquation::Add;
 }
@@ -71,7 +71,10 @@ void SpriteRenderer::Flush(ur2::Context& ctx)
 {
     ctx.BindTexture(0, ur2::TextureTarget::Texture2D, m_tex_id);
 
+    auto fbo = ctx.GetFramebuffer();
+    ctx.SetFramebuffer(m_fbo);
     FlushBuffer(ctx, ur2::PrimitiveType::Triangles, m_rs, m_shaders[0]);
+    ctx.SetFramebuffer(fbo);
 }
 
 void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
@@ -80,23 +83,24 @@ void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
 {
     if (m_buf.vertices.empty())
     {
+        m_tex_id = tex_id;
         m_rs = rs;
+        m_fbo = ctx.GetFramebuffer();
     }
     else
     {
-        if (m_rs != rs) {
+        if (m_tex_id != tex_id || m_rs != rs || m_fbo != ctx.GetFramebuffer())
+        {
             Flush(ctx);
+
+            m_tex_id = tex_id;
             m_rs = rs;
+            m_fbo = ctx.GetFramebuffer();
         }
-    }
 
-	if (m_tex_id != tex_id) {
-		Flush(ctx);
-        m_tex_id = tex_id;
-	}
-
-    if (m_buf.vertices.size() + 4 >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
-        Flush(ctx);
+        if (m_buf.vertices.size() + 4 >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
+            Flush(ctx);
+        }
     }
 
 	m_buf.Reserve(6, 4);
