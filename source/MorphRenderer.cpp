@@ -45,7 +45,7 @@ MorphRenderer::MorphRenderer(const ur2::Device& dev)
 
 void MorphRenderer::Draw() const
 {
-    m_shaders[0]->Bind();
+//    m_shaders[0]->Bind();
 }
 
 void MorphRenderer::InitShader(const ur2::Device& dev)

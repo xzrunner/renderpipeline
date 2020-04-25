@@ -73,7 +73,7 @@ void SkinRenderer::Draw(ur2::Context& ur_ctx,
     }
 
     auto shader = do_tex_map ? m_shaders[SHADER_TEX_MAP] : m_shaders[SHADER_NO_TEX_MAP];
-    shader->Bind();
+//    shader->Bind();
 
 	//auto mode = shader->GetDrawMode();
 

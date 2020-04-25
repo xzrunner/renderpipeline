@@ -35,8 +35,6 @@ SkyboxRenderer::SkyboxRenderer(const ur2::Device& dev)
 
 void SkyboxRenderer::Draw(ur2::Context& ctx, const ur2::Texture& cube_tex) const
 {
-    m_shaders[0]->Bind();
-
     cube_tex.Bind();
 
     ur2::DrawState draw;

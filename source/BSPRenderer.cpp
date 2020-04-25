@@ -40,7 +40,7 @@ BSPRenderer::BSPRenderer(const ur2::Device& dev)
 
 void BSPRenderer::Draw() const
 {
-    m_shaders[0]->Bind();
+//    m_shaders[0]->Bind();
 }
 
 void BSPRenderer::InitShader(const ur2::Device& dev)

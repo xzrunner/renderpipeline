@@ -134,7 +134,7 @@ void HeightfieldGrayRenderer::Setup(const ur2::Device& dev, ur2::Context& ctx,
 
     // bind shader
     auto shader = m_shaders.front();
-    shader->Bind();
+//    shader->Bind();
 
     // update uniforms
     pt0::ShaderUniforms vals;

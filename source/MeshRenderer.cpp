@@ -79,7 +79,7 @@ void MeshRenderer::Draw(ur2::Context& ur_ctx,
     }
     assert(sd);
 
-    sd->Bind();
+//    sd->Bind();
     material.Bind(*sd);
     ctx.Bind(*sd);
 
