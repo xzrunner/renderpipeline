@@ -69,7 +69,7 @@ SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
 
 void SpriteRenderer::Flush(ur2::Context& ctx)
 {
-    ctx.BindTexture(0, ur2::TextureTarget::Texture2D, m_tex_id);
+    ctx.SetTexture(0, m_tex);
 
     auto fbo = ctx.GetFramebuffer();
     ctx.SetFramebuffer(m_fbo);
@@ -79,22 +79,22 @@ void SpriteRenderer::Flush(ur2::Context& ctx)
 
 void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
                               const float* positions, const float* texcoords,
-                              int tex_id, uint32_t color)
+                              const ur2::TexturePtr& tex, uint32_t color)
 {
     if (m_buf.vertices.empty())
     {
-        m_tex_id = tex_id;
-        m_rs = rs;
+        m_tex = tex;
+        m_rs  = rs;
         m_fbo = ctx.GetFramebuffer();
     }
     else
     {
-        if (m_tex_id != tex_id || m_rs != rs || m_fbo != ctx.GetFramebuffer())
+        if (m_tex != tex || m_rs != rs || m_fbo != ctx.GetFramebuffer())
         {
             Flush(ctx);
 
-            m_tex_id = tex_id;
-            m_rs = rs;
+            m_tex = tex;
+            m_rs  = rs;
             m_fbo = ctx.GetFramebuffer();
         }
 
@@ -148,7 +148,7 @@ void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
         }
     }
 
-	if (m_palette->GetTexture()->GetTexID() == m_tex_id)
+	if (m_palette->GetTexture() == m_tex)
 	{
 		copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 	}
@@ -163,39 +163,40 @@ void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
 		auto cached_texcoords = Callback::QueryCachedTexQuad(tex_id, qr, cached_texid);
 		if (cached_texcoords)
 		{
-			if (cached_texid != m_tex_id)
-			{
-				Flush(ctx);
-				m_tex_id = cached_texid;
-			}
+            // todo tex_id to TexturePtr
+            //if (cached_texid != m_tex->GetTexID())
+            //{
+	           // Flush(ctx);
+	           // m_tex = cached_texid;
+            //}
 
-            if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
-                Flush(ctx);
-            }
+            //if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
+            //    Flush(ctx);
+            //}
 
-			copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
+            //copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 
-			float x = cached_texcoords[0];
-			float y = cached_texcoords[1];
-			float w = cached_texcoords[2] - cached_texcoords[0];
-			float h = cached_texcoords[5] - cached_texcoords[1];
-			size_t v_sz = pt.GetBuffer().vertices.size();
+            //float x = cached_texcoords[0];
+            //float y = cached_texcoords[1];
+            //float w = cached_texcoords[2] - cached_texcoords[0];
+            //float h = cached_texcoords[5] - cached_texcoords[1];
+            //size_t v_sz = pt.GetBuffer().vertices.size();
 
-            assert(m_buf.curr_index - v_sz < m_buf.vertices.size());
-			auto v_ptr = &m_buf.vertices[m_buf.curr_index - v_sz];
-			for (size_t i = 0; i < v_sz; ++i)
-			{
-				auto& v = *v_ptr++;
-				v.uv.x = x + w * v.uv.x;
-				v.uv.y = y + h * v.uv.y;
-			}
+            //assert(m_buf.curr_index - v_sz < m_buf.vertices.size());
+            //auto v_ptr = &m_buf.vertices[m_buf.curr_index - v_sz];
+            //for (size_t i = 0; i < v_sz; ++i)
+            //{
+	           // auto& v = *v_ptr++;
+	           // v.uv.x = x + w * v.uv.x;
+	           // v.uv.y = y + h * v.uv.y;
+            //}
 		}
 		else
 		{
 			Callback::AddCacheSymbol(tex_id, tex_w, tex_h, qr);
 
 			Flush(ctx);
-            m_tex_id = m_palette->GetTexture()->GetTexID();
+            m_tex = m_palette->GetTexture();
 			copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 		}
 	}

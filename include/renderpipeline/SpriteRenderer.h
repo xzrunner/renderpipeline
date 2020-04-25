@@ -29,7 +29,7 @@ public:
 	virtual void Flush(ur2::Context& ctx) override;
 
 	void DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs, const float* positions,
-        const float* texcoords, int tex_id, uint32_t color);
+        const float* texcoords, const ur2::TexturePtr& tex, uint32_t color);
 	void DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs, const tess::Painter& pt,
         const sm::mat4& mat = sm::mat4());
 
@@ -41,8 +41,7 @@ private:
 private:
 	std::unique_ptr<tess::Palette> m_palette = nullptr;
 
-//    ur2::TexturePtr m_tex = nullptr;
-    int m_tex_id = 0;
+    ur2::TexturePtr m_tex = nullptr;
 
     ur2::RenderState m_rs;
     std::shared_ptr<ur2::Framebuffer> m_fbo = nullptr;

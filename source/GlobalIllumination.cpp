@@ -43,19 +43,19 @@ void GlobalIllumination::Eval(const rendergraph::RenderContext& rc, size_t port_
     case ID_IRRADIANCE_MAP:
         if (m_gi.irradiance_map) {
             var.type = rendergraph::VariableType::SamplerCube;
-            var.res_id = m_gi.irradiance_map->GetTexID();
+            var.p = &m_gi.irradiance_map;
         }
         break;
     case ID_PREFILTER_MAP:
         if (m_gi.prefilter_map) {
             var.type = rendergraph::VariableType::SamplerCube;
-            var.res_id = m_gi.prefilter_map->GetTexID();
+            var.p = &m_gi.prefilter_map;
         }
         break;
     case ID_BRDF_LUT:
         if (m_gi.brdf_lut) {
             var.type = rendergraph::VariableType::Sampler2D;
-            var.res_id = m_gi.brdf_lut->GetTexID();
+            var.p = &m_gi.brdf_lut;
         }
         break;
     }
