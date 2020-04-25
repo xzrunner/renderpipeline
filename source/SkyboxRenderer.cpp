@@ -33,13 +33,15 @@ SkyboxRenderer::SkyboxRenderer(const ur2::Device& dev)
     InitShader(dev);
 }
 
-void SkyboxRenderer::Draw(ur2::Context& ctx, const ur2::Texture& cube_tex) const
+void SkyboxRenderer::Draw(const ur2::Device& dev, ur2::Context& ctx,
+                          const ur2::Texture& cube_tex) const
 {
     cube_tex.Bind();
 
-    ur2::DrawState draw;
-    draw.program = m_shaders[0];
-    ctx.DrawCube(ur2::Context::VertexLayout::Pos, draw);
+    ur2::DrawState ds;
+    ds.program = m_shaders[0];
+    ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Cube, ur2::VertexLayoutType::Pos);
+    ctx.Draw(ur2::PrimitiveType::Triangles, ds, nullptr);
 }
 
 void SkyboxRenderer::InitShader(const ur2::Device& dev)

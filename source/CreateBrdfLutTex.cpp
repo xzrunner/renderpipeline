@@ -70,10 +70,10 @@ ur2::TexturePtr CreateBrdfLutTex(const ur2::Device& dev, ur2::Context& ctx)
     clear.color.FromRGBA(0x88888888);
     ctx.Clear(clear);
 
-    ur2::DrawState draw;
-    draw.program = dev.CreateShaderProgram(brdf_vs, brdf_fs);
-
-    ctx.DrawQuad(ur2::Context::VertexLayout::PosTex, draw);
+    ur2::DrawState ds;
+    ds.program = dev.CreateShaderProgram(brdf_vs, brdf_fs);
+    ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Quad, ur2::VertexLayoutType::PosTex);
+    ctx.Draw(ur2::PrimitiveType::TriangleStrip, ds, nullptr);
 
     return brdf_lut_tex;
 }

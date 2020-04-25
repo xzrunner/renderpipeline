@@ -79,8 +79,8 @@ ur2::TexturePtr HDREquirectangularToCubemap(const ur2::Device& dev, ur2::Context
 
     auto shader = dev.CreateShaderProgram(cubemap_vs, equirectangular_to_cubemap_fs);
 
-    ur2::DrawState draw;
-    draw.program = shader;
+    ur2::DrawState ds;
+    ds.program = shader;
 
     auto u_eq_map = shader->QueryUniform("equirectangularMap");
     assert(u_eq_map);
@@ -113,7 +113,8 @@ ur2::TexturePtr HDREquirectangularToCubemap(const ur2::Device& dev, ur2::Context
         clear.color.FromRGBA(0x88888888);
         ctx.Clear(clear);
 
-        ctx.DrawCube(ur2::Context::VertexLayout::Pos, draw);
+        ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Cube, ur2::VertexLayoutType::Pos);
+        ctx.Draw(ur2::PrimitiveType::Triangles, ds, nullptr);
     }
 
     return cubemap;

@@ -91,8 +91,8 @@ ur2::TexturePtr CreatePrefilterCubemap(const ur2::Device& dev, ur2::Context& ctx
 
     auto shader = dev.CreateShaderProgram(cubemap_vs, prefilter_fs);
 
-    ur2::DrawState draw;
-    draw.program = shader;
+    ur2::DrawState ds;
+    ds.program = shader;
 
     auto u_env_map = shader->QueryUniform("environmentMap");
     assert(u_env_map);
@@ -139,7 +139,8 @@ ur2::TexturePtr CreatePrefilterCubemap(const ur2::Device& dev, ur2::Context& ctx
             clear.color.FromRGBA(0x88888888);
             ctx.Clear(clear);
 
-            ctx.DrawCube(ur2::Context::VertexLayout::Pos, draw);
+            ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Cube, ur2::VertexLayoutType::Pos);
+            ctx.Draw(ur2::PrimitiveType::Triangles, ds, nullptr);
         }
     }
 

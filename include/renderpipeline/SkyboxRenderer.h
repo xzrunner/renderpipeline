@@ -14,7 +14,8 @@ public:
 
     virtual void Flush(ur2::Context& ctx) override {}
 
-    void Draw(ur2::Context& ctx, const ur2::Texture& cube_tex) const;
+    void Draw(const ur2::Device& dev, ur2::Context& ctx,
+        const ur2::Texture& cube_tex) const;
 
 private:
     void InitShader(const ur2::Device& dev);
