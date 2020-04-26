@@ -14,6 +14,7 @@
 #include <unirender2/VertexBufferAttribute.h>
 #include <unirender2/Texture.h>
 #include <unirender2/TextureTarget.h>
+#include <unirender2/Factory.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -57,14 +58,7 @@ SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
 
 	m_palette = std::make_unique<tess::Palette>(dev);
 
-    m_rs.depth_test.enabled = false;
-    m_rs.facet_culling.enabled = false;
-
-    m_rs.blending.enabled = true;
-    m_rs.blending.separately = false;
-    m_rs.blending.src = ur2::BlendingFactor::SrcAlpha;
-    m_rs.blending.dst = ur2::BlendingFactor::OneMinusSrcAlpha;
-    m_rs.blending.equation = ur2::BlendEquation::Add;
+    m_rs = ur2::DefaultRenderState2D();
 }
 
 void SpriteRenderer::Flush(ur2::Context& ctx)
