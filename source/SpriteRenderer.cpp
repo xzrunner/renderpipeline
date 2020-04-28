@@ -142,52 +142,51 @@ void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
         }
     }
 
-	if (m_palette->GetTexture() == m_tex)
-	{
-		copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
-	}
-	else
+	//if (m_palette->GetTexture() == m_tex)
+	//{
+	//	copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
+	//}
+	//else
 	{
         auto p_tex = m_palette->GetTexture();
 		int tex_id = p_tex->GetTexID();
 		int tex_w = p_tex->GetWidth();
 		int tex_h = p_tex->GetHeight();
 		sm::irect qr(0, 0, tex_w, tex_h);
-		int cached_texid;
-		auto cached_texcoords = Callback::QueryCachedTexQuad(tex_id, qr, cached_texid);
+        ur2::TexturePtr cached_tex = nullptr;
+		auto cached_texcoords = Callback::QueryCachedTexQuad(tex_id, qr, cached_tex);
 		if (cached_texcoords)
 		{
-            // todo tex_id to TexturePtr
-            //if (cached_texid != m_tex->GetTexID())
-            //{
-	           // Flush(ctx);
-	           // m_tex = cached_texid;
-            //}
+            if (cached_tex != m_tex)
+            {
+	            Flush(ctx);
+	            m_tex = cached_tex;
+            }
 
-            //if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
-            //    Flush(ctx);
-            //}
+            if (m_buf.vertices.size() + pt.GetBuffer().vertices.size() >= RenderBuffer<SpriteVertex, unsigned short>::MAX_VERTEX_NUM) {
+                Flush(ctx);
+            }
 
-            //copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
+            copy_vertex_buffer(mat, m_buf, pt.GetBuffer());
 
-            //float x = cached_texcoords[0];
-            //float y = cached_texcoords[1];
-            //float w = cached_texcoords[2] - cached_texcoords[0];
-            //float h = cached_texcoords[5] - cached_texcoords[1];
-            //size_t v_sz = pt.GetBuffer().vertices.size();
+            float x = cached_texcoords[0];
+            float y = cached_texcoords[1];
+            float w = cached_texcoords[2] - cached_texcoords[0];
+            float h = cached_texcoords[5] - cached_texcoords[1];
+            size_t v_sz = pt.GetBuffer().vertices.size();
 
-            //assert(m_buf.curr_index - v_sz < m_buf.vertices.size());
-            //auto v_ptr = &m_buf.vertices[m_buf.curr_index - v_sz];
-            //for (size_t i = 0; i < v_sz; ++i)
-            //{
-	           // auto& v = *v_ptr++;
-	           // v.uv.x = x + w * v.uv.x;
-	           // v.uv.y = y + h * v.uv.y;
-            //}
+            assert(m_buf.curr_index - v_sz < m_buf.vertices.size());
+            auto v_ptr = &m_buf.vertices[m_buf.curr_index - v_sz];
+            for (size_t i = 0; i < v_sz; ++i)
+            {
+	            auto& v = *v_ptr++;
+	            v.uv.x = x + w * v.uv.x;
+	            v.uv.y = y + h * v.uv.y;
+            }
 		}
 		else
 		{
-			Callback::AddCacheSymbol(tex_id, tex_w, tex_h, qr);
+			Callback::AddCacheSymbol(p_tex, qr);
 
 			Flush(ctx);
             m_tex = m_palette->GetTexture();

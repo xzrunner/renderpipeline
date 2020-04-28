@@ -10,14 +10,14 @@ void Callback::RegisterCallback(const Callback::Funs& funs)
 	FUNS = funs;
 }
 
-const float* Callback::QueryCachedTexQuad(size_t tex_id, const sm::irect& rect, int& out_tex_id)
+const float* Callback::QueryCachedTexQuad(size_t tex_id, const sm::irect& rect, ur2::TexturePtr& out_tex)
 {
-	return FUNS.query_cached_tex_quad(tex_id, rect, out_tex_id);
+	return FUNS.query_cached_tex_quad(tex_id, rect, out_tex);
 }
 
-void Callback::AddCacheSymbol(size_t tex_id, int tex_w, int tex_h, const sm::irect& rect)
+void Callback::AddCacheSymbol(const ur2::TexturePtr& tex, const sm::irect& rect)
 {
-	FUNS.add_cache_symbol(tex_id, tex_w, tex_h, rect);
+	FUNS.add_cache_symbol(tex, rect);
 }
 
 }
