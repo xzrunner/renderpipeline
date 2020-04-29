@@ -1,10 +1,10 @@
 #include "renderpipeline/HeightfieldGrayRenderer.h"
 
 #include <heightfield/HeightField.h>
-#include <unirender2/Texture.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/ComponentDataType.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/Texture.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/ComponentDataType.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <renderpipeline/UniformNames.h>
 #include <painting0/ShaderUniforms.h>
 #include <painting0/ModelMatUpdater.h>
@@ -97,13 +97,13 @@ void main()
 namespace rp
 {
 
-HeightfieldGrayRenderer::HeightfieldGrayRenderer(const ur2::Device& dev)
+HeightfieldGrayRenderer::HeightfieldGrayRenderer(const ur::Device& dev)
     : HeightfieldRenderer(dev)
 {
     InitShader(dev);
 }
 
-void HeightfieldGrayRenderer::Setup(const ur2::Device& dev, ur2::Context& ctx,
+void HeightfieldGrayRenderer::Setup(const ur::Device& dev, ur::Context& ctx,
                                     const std::shared_ptr<hf::HeightField>& hf)
 {
     m_hf = hf;
@@ -150,16 +150,16 @@ void HeightfieldGrayRenderer::Clear()
     m_height_map.reset();
 }
 
-void HeightfieldGrayRenderer::InitShader(const ur2::Device& dev)
+void HeightfieldGrayRenderer::InitShader(const ur::Device& dev)
 {
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
     // rp::VERT_POSITION_NAME
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 20
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 20
     );
     // rp::VERT_TEXCOORD_NAME
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 12, 20
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 12, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

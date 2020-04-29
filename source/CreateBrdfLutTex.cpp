@@ -4,13 +4,13 @@
 #include "shader/brdf.vert"
 #include "shader/brdf.frag"
 
-#include <unirender2/Device.h>
-#include <unirender2/Context.h>
-#include <unirender2/TextureDescription.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/Framebuffer.h>
-#include <unirender2/DrawState.h>
-#include <unirender2/ClearState.h>
+#include <unirender/Device.h>
+#include <unirender/Context.h>
+#include <unirender/TextureDescription.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/Framebuffer.h>
+#include <unirender/DrawState.h>
+#include <unirender/ClearState.h>
 
 namespace rp
 {
@@ -49,13 +49,13 @@ namespace rp
 //    return brdf_lut_tex;
 //}
 
-ur2::TexturePtr CreateBrdfLutTex(const ur2::Device& dev, ur2::Context& ctx)
+ur::TexturePtr CreateBrdfLutTex(const ur::Device& dev, ur::Context& ctx)
 {
-    ur2::TextureDescription desc;
+    ur::TextureDescription desc;
     desc.width  = 512;
     desc.height = 512;
-    desc.target = ur2::TextureTarget::Texture2D;
-    desc.format = ur2::TextureFormat::RG16F;
+    desc.target = ur::TextureTarget::Texture2D;
+    desc.format = ur::TextureFormat::RG16F;
     auto brdf_lut_tex = dev.CreateTexture(desc);
 
     ctx.SetViewport(0, 0, 512, 512);
@@ -63,17 +63,17 @@ ur2::TexturePtr CreateBrdfLutTex(const ur2::Device& dev, ur2::Context& ctx)
     auto fbo = dev.CreateFramebuffer();
     ctx.SetFramebuffer(fbo);
 
-    fbo->SetAttachment(ur2::AttachmentType::Color0, ur2::TextureTarget::Texture2D, brdf_lut_tex, nullptr);
+    fbo->SetAttachment(ur::AttachmentType::Color0, ur::TextureTarget::Texture2D, brdf_lut_tex, nullptr);
 
-    ur2::ClearState clear;
-    clear.buffers = ur2::ClearBuffers::ColorAndDepthBuffer;
+    ur::ClearState clear;
+    clear.buffers = ur::ClearBuffers::ColorAndDepthBuffer;
     clear.color.FromRGBA(0x88888888);
     ctx.Clear(clear);
 
-    ur2::DrawState ds;
+    ur::DrawState ds;
     ds.program = dev.CreateShaderProgram(brdf_vs, brdf_fs);
-    ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Quad, ur2::VertexLayoutType::PosTex);
-    ctx.Draw(ur2::PrimitiveType::TriangleStrip, ds, nullptr);
+    ds.vertex_array = dev.GetVertexArray(ur::Device::PrimitiveType::Quad, ur::VertexLayoutType::PosTex);
+    ctx.Draw(ur::PrimitiveType::TriangleStrip, ds, nullptr);
 
     return brdf_lut_tex;
 }

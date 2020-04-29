@@ -1,12 +1,12 @@
 #pragma once
 
-#include <unirender2/typedef.h>
+#include <unirender/typedef.h>
 
-namespace ur2 { class Device; class Context; }
+namespace ur { class Device; class Context; }
 
 namespace rp
 {
 
-ur2::TexturePtr CreateBrdfLutTex(const ur2::Device& dev, ur2::Context& ctx);
+ur::TexturePtr CreateBrdfLutTex(const ur::Device& dev, ur::Context& ctx);
 
 }

@@ -5,7 +5,7 @@
 
 #include <SM_Vector.h>
 #include <SM_Matrix.h>
-#include <unirender2/typedef.h>
+#include <unirender/typedef.h>
 
 #include <boost/noncopyable.hpp>
 
@@ -24,27 +24,27 @@ struct SpriteVertex
 class SpriteRenderer : public IRenderer, private RendererImpl<SpriteVertex, unsigned short>, private boost::noncopyable
 {
 public:
-	SpriteRenderer(const ur2::Device& dev);
+	SpriteRenderer(const ur::Device& dev);
 
-	virtual void Flush(ur2::Context& ctx) override;
+	virtual void Flush(ur::Context& ctx) override;
 
-	void DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs, const float* positions,
-        const float* texcoords, const ur2::TexturePtr& tex, uint32_t color);
-	void DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs, const tess::Painter& pt,
+	void DrawQuad(ur::Context& ctx, const ur::RenderState& rs, const float* positions,
+        const float* texcoords, const ur::TexturePtr& tex, uint32_t color);
+	void DrawPainter(ur::Context& ctx, const ur::RenderState& rs, const tess::Painter& pt,
         const sm::mat4& mat = sm::mat4());
 
 	auto& GetPalette() const { return *m_palette; }
 
 private:
-	void InitShader(const ur2::Device& dev);
+	void InitShader(const ur::Device& dev);
 
 private:
 	std::unique_ptr<tess::Palette> m_palette = nullptr;
 
-    ur2::TexturePtr m_tex = nullptr;
+    ur::TexturePtr m_tex = nullptr;
 
-    ur2::RenderState m_rs;
-    std::shared_ptr<ur2::Framebuffer> m_fbo = nullptr;
+    ur::RenderState m_rs;
+    std::shared_ptr<ur::Framebuffer> m_fbo = nullptr;
 
 }; // SpriteRenderer
 

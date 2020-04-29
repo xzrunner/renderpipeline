@@ -3,15 +3,15 @@
 #include "renderpipeline/CreatePrefilterCubemap.h"
 #include "renderpipeline/CreateBrdfLutTex.h"
 
-#include <unirender2/Device.h>
-#include <unirender2/VertexArray.h>
+#include <unirender/Device.h>
+#include <unirender/VertexArray.h>
 #include <painting3/GlobalIllumination.h>
 
 namespace rp
 {
 
-void InitGIWithSkybox(const ur2::Device& dev, ur2::Context& ctx,
-                      const ur2::TexturePtr skybox, pt3::GlobalIllumination& gi)
+void InitGIWithSkybox(const ur::Device& dev, ur::Context& ctx,
+                      const ur::TexturePtr skybox, pt3::GlobalIllumination& gi)
 {
     if (!gi.irradiance_map) {
         gi.irradiance_map = CreateIrradianceCubemap(dev, ctx, skybox);
@@ -24,17 +24,17 @@ void InitGIWithSkybox(const ur2::Device& dev, ur2::Context& ctx,
     }
 }
 
-std::shared_ptr<ur2::VertexArray>
-CreateVertexArray(const ur2::Device& dev)
+std::shared_ptr<ur::VertexArray>
+CreateVertexArray(const ur::Device& dev)
 {
     auto va = dev.CreateVertexArray();
 
-    auto usage = ur2::BufferUsageHint::StaticDraw;
+    auto usage = ur::BufferUsageHint::StaticDraw;
 
     auto ibuf = dev.CreateIndexBuffer(usage, 0);
     va->SetIndexBuffer(ibuf);
 
-    auto vbuf = dev.CreateVertexBuffer(ur2::BufferUsageHint::StaticDraw, 0);
+    auto vbuf = dev.CreateVertexBuffer(ur::BufferUsageHint::StaticDraw, 0);
     va->SetVertexBuffer(vbuf);
 
     return va;

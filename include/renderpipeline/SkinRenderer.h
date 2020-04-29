@@ -25,18 +25,18 @@ struct SkinVertex
 class SkinRenderer : public IRenderer, private RendererImpl<SkinVertex, unsigned short>, private boost::noncopyable
 {
 public:
-    SkinRenderer(const ur2::Device& dev);
+    SkinRenderer(const ur::Device& dev);
 
-    virtual void Flush(ur2::Context& ctx) override {}
+    virtual void Flush(ur::Context& ctx) override {}
 
-    void Draw(ur2::Context& ur_ctx, const model::Model& model, const model::Model::Mesh& mesh,
+    void Draw(ur::Context& ur_ctx, const model::Model& model, const model::Model::Mesh& mesh,
         const pt0::Material& material, const pt0::RenderContext& ctx) const;
 
 private:
-    void InitShader(const ur2::Device& dev);
+    void InitShader(const ur::Device& dev);
 
-    static std::shared_ptr<ur2::ShaderProgram>
-        BuildShader(const ur2::Device& dev, bool tex_map);
+    static std::shared_ptr<ur::ShaderProgram>
+        BuildShader(const ur::Device& dev, bool tex_map);
 
 }; // SkinRenderer
 

@@ -1,9 +1,9 @@
 #include "renderpipeline/Shape3Renderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexArray.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexArray.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/ViewMatUpdater.h>
@@ -21,18 +21,18 @@
 namespace rp
 {
 
-Shape3Renderer::Shape3Renderer(const ur2::Device& dev)
+Shape3Renderer::Shape3Renderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
     InitShader(dev);
 }
 
-void Shape3Renderer::Flush(ur2::Context& ctx)
+void Shape3Renderer::Flush(ur::Context& ctx)
 {
     FlushBuffer(ctx, m_draw_mode, m_rs, m_shaders[0]);
 }
 
-void Shape3Renderer::DrawLines(ur2::Context& ctx, const ur2::RenderState& rs, size_t num,
+void Shape3Renderer::DrawLines(ur::Context& ctx, const ur::RenderState& rs, size_t num,
                                const float* positions, uint32_t color)
 {
     if (m_buf.vertices.empty())
@@ -47,9 +47,9 @@ void Shape3Renderer::DrawLines(ur2::Context& ctx, const ur2::RenderState& rs, si
         }
     }
 
-    if (m_draw_mode != ur2::PrimitiveType::Lines) {
+    if (m_draw_mode != ur::PrimitiveType::Lines) {
         Flush(ctx);
-        m_draw_mode = ur2::PrimitiveType::Lines;
+        m_draw_mode = ur::PrimitiveType::Lines;
     }
 
     if (m_buf.vertices.size() + num >= RenderBuffer<Shape3Vertex, unsigned short>::MAX_VERTEX_NUM) {
@@ -72,15 +72,15 @@ void Shape3Renderer::DrawLines(ur2::Context& ctx, const ur2::RenderState& rs, si
     m_buf.curr_index += static_cast<unsigned short>(num);
 }
 
-void Shape3Renderer::InitShader(const ur2::Device& dev)
+void Shape3Renderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 16
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 16
     );
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::UnsignedByte, 4, 12, 16
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::UnsignedByte, 4, 12, 16
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

@@ -1,11 +1,11 @@
 #include "renderpipeline/SkyboxRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/Device.h>
-#include <unirender2/Context.h>
-#include <unirender2/Texture.h>
-#include <unirender2/DrawState.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/Device.h>
+#include <unirender/Context.h>
+#include <unirender/Texture.h>
+#include <unirender/DrawState.h>
 #include <painting3/Shader.h>
 #include <painting3/ViewMatUpdater.h>
 #include <painting3/ProjectMatUpdater.h>
@@ -28,23 +28,23 @@
 namespace rp
 {
 
-SkyboxRenderer::SkyboxRenderer(const ur2::Device& dev)
+SkyboxRenderer::SkyboxRenderer(const ur::Device& dev)
 {
     InitShader(dev);
 }
 
-void SkyboxRenderer::Draw(const ur2::Device& dev, ur2::Context& ctx,
-                          const ur2::Texture& cube_tex) const
+void SkyboxRenderer::Draw(const ur::Device& dev, ur::Context& ctx,
+                          const ur::Texture& cube_tex) const
 {
     cube_tex.Bind();
 
-    ur2::DrawState ds;
+    ur::DrawState ds;
     ds.program = m_shaders[0];
-    ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Cube, ur2::VertexLayoutType::Pos);
-    ctx.Draw(ur2::PrimitiveType::Triangles, ds, nullptr);
+    ds.vertex_array = dev.GetVertexArray(ur::Device::PrimitiveType::Cube, ur::VertexLayoutType::Pos);
+    ctx.Draw(ur::PrimitiveType::Triangles, ds, nullptr);
 }
 
-void SkyboxRenderer::InitShader(const ur2::Device& dev)
+void SkyboxRenderer::InitShader(const ur::Device& dev)
 {
     //////////////////////////////////////////////////////////////////////////
     // layout

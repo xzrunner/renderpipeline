@@ -1,9 +1,9 @@
 #include "renderpipeline/VolumeRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/ComponentDataType.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/ComponentDataType.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/Blackboard.h>
@@ -23,21 +23,21 @@
 namespace rp
 {
 
-VolumeRenderer::VolumeRenderer(const ur2::Device& dev)
+VolumeRenderer::VolumeRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
 	InitShader(dev);
 }
 
-void VolumeRenderer::Flush(ur2::Context& ctx)
+void VolumeRenderer::Flush(ur::Context& ctx)
 {
-    ur2::RenderState rs_new(m_rs);
+    ur::RenderState rs_new(m_rs);
     PrepareRenderState(rs_new);
 
-    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, rs_new, m_shaders[0]);
+    FlushBuffer(ctx, ur::PrimitiveType::Triangles, rs_new, m_shaders[0]);
 }
 
-void VolumeRenderer::DrawCube(ur2::Context& ctx, const ur2::RenderState& rs, const float* positions,
+void VolumeRenderer::DrawCube(ur::Context& ctx, const ur::RenderState& rs, const float* positions,
                               const float* texcoords, int texid, uint32_t color)
 {
     if (m_buf.vertices.empty())
@@ -85,18 +85,18 @@ void VolumeRenderer::DrawCube(ur2::Context& ctx, const ur2::RenderState& rs, con
 	m_buf.curr_index += 4;
 }
 
-void VolumeRenderer::InitShader(const ur2::Device& dev)
+void VolumeRenderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 28
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 28
     );
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 12, 28
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 12, 28
     );
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::UnsignedByte, 4, 24, 28
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::UnsignedByte, 4, 24, 28
     );
 
 	// vert
@@ -162,15 +162,15 @@ void VolumeRenderer::InitShader(const ur2::Device& dev)
     m_shaders[0] = shader;
 }
 
-void VolumeRenderer::PrepareRenderState(ur2::RenderState& rs)
+void VolumeRenderer::PrepareRenderState(ur::RenderState& rs)
 {
 	// enable alpha blend
     rs.blending.enabled = true;
-    rs.blending.src = ur2::BlendingFactor::SrcAlpha;
-    rs.blending.dst = ur2::BlendingFactor::OneMinusSrcAlpha;
+    rs.blending.src = ur::BlendingFactor::SrcAlpha;
+    rs.blending.dst = ur::BlendingFactor::OneMinusSrcAlpha;
 	// enable alpha test
     rs.alpha_test.enabled = true;
-    rs.alpha_test.function = ur2::AlphaTestFunc::Greater;
+    rs.alpha_test.function = ur::AlphaTestFunc::Greater;
     rs.alpha_test.ref = 0.05f;
 	// disable depth test
     rs.depth_test.enabled = false;

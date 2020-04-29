@@ -23,7 +23,7 @@ RenderMgr::RenderMgr()
 }
 
 std::shared_ptr<IRenderer>
-RenderMgr::SetRenderer(const ur2::Device& dev, ur2::Context& ctx, RenderType type)
+RenderMgr::SetRenderer(const ur::Device& dev, ur::Context& ctx, RenderType type)
 {
 	if (m_curr_render != type)
 	{
@@ -150,7 +150,7 @@ std::shared_ptr<IRenderer> RenderMgr::GetRenderer(RenderType type)
 //    }
 //}
 
-void RenderMgr::Flush(const ur2::Device& dev, ur2::Context& ctx)
+void RenderMgr::Flush(const ur::Device& dev, ur::Context& ctx)
 {
 	auto shader = SetRenderer(dev, ctx, m_curr_render);
 	if (shader) {

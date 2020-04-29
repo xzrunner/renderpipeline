@@ -1,13 +1,13 @@
 #pragma once
 
-#include <unirender2/typedef.h>
+#include <unirender/typedef.h>
 
-namespace ur2 { class Device; class Context; }
+namespace ur { class Device; class Context; }
 
 namespace rp
 {
 
 // convert HDR equirectangular environment map to cubemap equivalent
-ur2::TexturePtr HDREquirectangularToCubemap(const ur2::Device& dev, ur2::Context& ctx, const ur2::TexturePtr& equirectangular_map);
+ur::TexturePtr HDREquirectangularToCubemap(const ur::Device& dev, ur::Context& ctx, const ur::TexturePtr& equirectangular_map);
 
 }

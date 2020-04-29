@@ -1,58 +1,58 @@
 #include "renderpipeline/ExternRenderer.h"
 #include "renderpipeline/Utility.h"
 
-#include <unirender2/Device.h>
-#include <unirender2/Context.h>
-#include <unirender2/DrawState.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexArray.h>
-#include <unirender2/VertexBufferAttribute.h>
-#include <unirender2/IndexBuffer.h>
-#include <unirender2/VertexBuffer.h>
+#include <unirender/Device.h>
+#include <unirender/Context.h>
+#include <unirender/DrawState.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexArray.h>
+#include <unirender/VertexBufferAttribute.h>
+#include <unirender/IndexBuffer.h>
+#include <unirender/VertexBuffer.h>
 #include <painting0/ModelMatUpdater.h>
 
 namespace rp
 {
 
-ExternRenderer::ExternRenderer(const ur2::Device& dev)
+ExternRenderer::ExternRenderer(const ur::Device& dev)
 {
     m_va_tex = CreateVertexArray(dev);
     m_va_no_tex = CreateVertexArray(dev);
 }
 
-void ExternRenderer::DrawTexSpr(ur2::Context& ctx,
-                                const std::shared_ptr<ur2::ShaderProgram>& shader,
+void ExternRenderer::DrawTexSpr(ur::Context& ctx,
+                                const std::shared_ptr<ur::ShaderProgram>& shader,
                                 const sm::mat4& mat) const
 {
-    auto model_updater = shader->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    auto model_updater = shader->QueryUniformUpdater(ur::GetUpdaterTypeID<pt0::ModelMatUpdater>());
     if (model_updater) {
         std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mat);
     }
 
-    ur2::DrawState draw;
+    ur::DrawState draw;
     draw.program = shader;
     draw.vertex_array = m_va_tex;
-    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
+    ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
 }
 
-void ExternRenderer::DrawNoTexSpr(ur2::Context& ctx,
-                                  const std::shared_ptr<ur2::ShaderProgram>& shader,
+void ExternRenderer::DrawNoTexSpr(ur::Context& ctx,
+                                  const std::shared_ptr<ur::ShaderProgram>& shader,
                                   const sm::mat4& mat) const
 {
-    auto model_updater = shader->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    auto model_updater = shader->QueryUniformUpdater(ur::GetUpdaterTypeID<pt0::ModelMatUpdater>());
     if (model_updater) {
         std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mat);
     }
 
-    ur2::DrawState draw;
+    ur::DrawState draw;
     draw.program = shader;
     draw.vertex_array = m_va_no_tex;
-    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
+    ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
 }
 
-void ExternRenderer::InitRenderData(const ur2::Device& dev)
+void ExternRenderer::InitRenderData(const ur::Device& dev)
 {
-    auto usage = ur2::BufferUsageHint::StaticDraw;
+    auto usage = ur::BufferUsageHint::StaticDraw;
 
 	// tex
 	{
@@ -76,14 +76,14 @@ void ExternRenderer::InitRenderData(const ur2::Device& dev)
         vbuf->ReadFromMemory(vertices, vbuf_sz, 0);
         m_va_tex->SetVertexBuffer(vbuf);
 
-        std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(2);
+        std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
         // pos
-        vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 2, 0, 16
+        vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 2, 0, 16
         );
         // tex
-        vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 2, 8, 16
+        vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 2, 8, 16
         );
         m_va_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}
@@ -108,10 +108,10 @@ void ExternRenderer::InitRenderData(const ur2::Device& dev)
         vbuf->ReadFromMemory(vertices, vbuf_sz, 0);
         m_va_no_tex->SetVertexBuffer(vbuf);
 
-        std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(1);
+        std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(1);
         // pos
-        vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 2, 0, 8
+        vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 2, 0, 8
         );
         m_va_no_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}

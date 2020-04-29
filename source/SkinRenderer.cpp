@@ -2,8 +2,8 @@
 
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -49,13 +49,13 @@ enum ShaderType
 namespace rp
 {
 
-SkinRenderer::SkinRenderer(const ur2::Device& dev)
+SkinRenderer::SkinRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
     InitShader(dev);
 }
 
-void SkinRenderer::Draw(ur2::Context& ur_ctx,
+void SkinRenderer::Draw(ur::Context& ur_ctx,
                         const model::Model& model,
                         const model::Model::Mesh& mesh,
                         const pt0::Material& material,
@@ -80,46 +80,46 @@ void SkinRenderer::Draw(ur2::Context& ur_ctx,
     material.Bind(*shader);
     ctx.Bind(*shader);
 
-    ur2::DrawState draw;
+    ur::DrawState draw;
     draw.program = shader;
     draw.vertex_array = geo.vertex_array;
 	for (auto& sub : geo.sub_geometries)
 	{
         draw.offset = sub.offset;
         draw.count = sub.count;
-        ur_ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
+        ur_ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
 	}
 }
 
-void SkinRenderer::InitShader(const ur2::Device& dev)
+void SkinRenderer::InitShader(const ur::Device& dev)
 {
     m_shaders.resize(SHADER_MAX_COUNT);
     m_shaders[SHADER_TEX_MAP]    = BuildShader(dev, true);
     m_shaders[SHADER_NO_TEX_MAP] = BuildShader(dev, false);
 }
 
-std::shared_ptr<ur2::ShaderProgram>
-SkinRenderer::BuildShader(const ur2::Device& dev, bool tex_map)
+std::shared_ptr<ur::ShaderProgram>
+SkinRenderer::BuildShader(const ur::Device& dev, bool tex_map)
 {
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(5);
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 40
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(5);
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 40
     );
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 12, 40
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 12, 40
     );
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 24, 40
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 24, 40
     );
-    vbuf_attrs[3] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::UnsignedByte, 4, 32, 40
+    vbuf_attrs[3] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::UnsignedByte, 4, 32, 40
     );
-    vbuf_attrs[4] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::UnsignedByte, 4, 36, 40
+    vbuf_attrs[4] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::UnsignedByte, 4, 36, 40
     );
 
     //////////////////////////////////////////////////////////////////////////

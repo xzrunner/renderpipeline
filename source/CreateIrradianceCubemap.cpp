@@ -5,20 +5,20 @@
 #include "shader/cubemap.vert"
 #include "shader/irradiance_convolution.frag"
 
-#include <unirender2/Device.h>
-#include <unirender2/Context.h>
-#include <unirender2/TextureDescription.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/Uniform.h>
-#include <unirender2/Texture.h>
-#include <unirender2/Framebuffer.h>
-#include <unirender2/ClearState.h>
-#include <unirender2/DrawState.h>
+#include <unirender/Device.h>
+#include <unirender/Context.h>
+#include <unirender/TextureDescription.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/Uniform.h>
+#include <unirender/Texture.h>
+#include <unirender/Framebuffer.h>
+#include <unirender/ClearState.h>
+#include <unirender/DrawState.h>
 
 namespace rp
 {
 
-//ur2::TexturePtr CreateIrradianceCubemap(const ur2::Device& dev, ur2::Context& ctx, const ur2::TexturePtr& cubemap)
+//ur::TexturePtr CreateIrradianceCubemap(const ur::Device& dev, ur::Context& ctx, const ur::TexturePtr& cubemap)
 //{
 //    unsigned int irr_cubemap = 0;
 //
@@ -69,19 +69,19 @@ namespace rp
 //    return irr_cubemap;
 //}
 
-ur2::TexturePtr CreateIrradianceCubemap(const ur2::Device& dev, ur2::Context& ctx,
-                                        const ur2::TexturePtr& cubemap)
+ur::TexturePtr CreateIrradianceCubemap(const ur::Device& dev, ur::Context& ctx,
+                                        const ur::TexturePtr& cubemap)
 {
-    ur2::TextureDescription desc;
-    desc.target = ur2::TextureTarget::TextureCubeMap;
+    ur::TextureDescription desc;
+    desc.target = ur::TextureTarget::TextureCubeMap;
     desc.width  = 32;
     desc.height = 32;
-    desc.format = ur2::TextureFormat::RGB16F;
+    desc.format = ur::TextureFormat::RGB16F;
     auto irr_cubemap = dev.CreateTexture(desc);
 
     auto shader = dev.CreateShaderProgram(cubemap_vs, irradiance_convolution_fs);
 
-    ur2::DrawState ds;
+    ur::DrawState ds;
     ds.program = shader;
 
     auto u_env_map = shader->QueryUniform("environmentMap");
@@ -110,16 +110,16 @@ ur2::TexturePtr CreateIrradianceCubemap(const ur2::Device& dev, ur2::Context& ct
         assert(u_view);
         u_view->SetValue(&capture_views[i][0][0], 4 * 4);
 
-        const auto target = static_cast<ur2::TextureTarget>(static_cast<int>(ur2::TextureTarget::TextureCubeMap0) + i);
-        fbo->SetAttachment(ur2::AttachmentType::Color0, target, irr_cubemap, nullptr);
+        const auto target = static_cast<ur::TextureTarget>(static_cast<int>(ur::TextureTarget::TextureCubeMap0) + i);
+        fbo->SetAttachment(ur::AttachmentType::Color0, target, irr_cubemap, nullptr);
 
-        ur2::ClearState clear;
-        clear.buffers = ur2::ClearBuffers::ColorAndDepthBuffer;
+        ur::ClearState clear;
+        clear.buffers = ur::ClearBuffers::ColorAndDepthBuffer;
         clear.color.FromRGBA(0x88888888);
         ctx.Clear(clear);
 
-        ds.vertex_array = dev.GetVertexArray(ur2::Device::PrimitiveType::Cube, ur2::VertexLayoutType::Pos);
-        ctx.Draw(ur2::PrimitiveType::Triangles, ds, nullptr);
+        ds.vertex_array = dev.GetVertexArray(ur::Device::PrimitiveType::Cube, ur::VertexLayoutType::Pos);
+        ctx.Draw(ur::PrimitiveType::Triangles, ds, nullptr);
     }
 
     return irr_cubemap;

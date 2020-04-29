@@ -4,7 +4,7 @@
 #include "renderpipeline/RendererImpl.h"
 
 #include <SM_Vector.h>
-#include <unirender2/PrimitiveType.h>
+#include <unirender/PrimitiveType.h>
 
 #include <boost/noncopyable.hpp>
 
@@ -22,20 +22,20 @@ struct Shape3Vertex
 class Shape3Renderer : public IRenderer, private RendererImpl<Shape3Vertex, unsigned short>, private boost::noncopyable
 {
 public:
-    Shape3Renderer(const ur2::Device& dev);
+    Shape3Renderer(const ur::Device& dev);
 
-    virtual void Flush(ur2::Context& ctx) override;
+    virtual void Flush(ur::Context& ctx) override;
 
-    void DrawLines(ur2::Context& ctx, const ur2::RenderState& rs, size_t num,
+    void DrawLines(ur::Context& ctx, const ur::RenderState& rs, size_t num,
         const float* positions, uint32_t color);
 
 private:
-    void InitShader(const ur2::Device& dev);
+    void InitShader(const ur::Device& dev);
 
 private:
-    ur2::PrimitiveType m_draw_mode = ur2::PrimitiveType::Lines;
+    ur::PrimitiveType m_draw_mode = ur::PrimitiveType::Lines;
 
-    ur2::RenderState m_rs;
+    ur::RenderState m_rs;
 
 }; // Shape3Renderer
 

@@ -1,10 +1,10 @@
 #include "renderpipeline/BSPRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/Device.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexBufferAttribute.h>
-#include <unirender2/VertexArray.h>
+#include <unirender/Device.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexArray.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting0/CamPosUpdater.h>
 #include <painting3/Shader.h>
@@ -32,7 +32,7 @@ const char* VERT_TEXCOORD_LIGHT_NAME = "texcoord_light";
 namespace rp
 {
 
-BSPRenderer::BSPRenderer(const ur2::Device& dev)
+BSPRenderer::BSPRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
     InitShader(dev);
@@ -43,24 +43,24 @@ void BSPRenderer::Draw() const
 //    m_shaders[0]->Bind();
 }
 
-void BSPRenderer::InitShader(const ur2::Device& dev)
+void BSPRenderer::InitShader(const ur::Device& dev)
 {
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSITION_NAME - position
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 28
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 28
     );
     // VERT_TEXCOORD_NAME - texcoord
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 12, 28
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 12, 28
     );
     // VERT_TEXCOORD_LIGHT_NAME - texcoord_light
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 20, 28
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 20, 28
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

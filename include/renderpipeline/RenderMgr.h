@@ -7,7 +7,7 @@
 
 namespace pt2 { class WindowContext; }
 namespace pt3 { class WindowContext; }
-namespace ur2 { class Device; class Context; }
+namespace ur { class Device; class Context; }
 
 namespace rp
 {
@@ -35,7 +35,7 @@ class RenderMgr
 {
 public:
 	std::shared_ptr<IRenderer>
-        SetRenderer(const ur2::Device& dev, ur2::Context& ctx, RenderType type);
+        SetRenderer(const ur::Device& dev, ur::Context& ctx, RenderType type);
     std::shared_ptr<IRenderer>
         GetRenderer(RenderType type);
 
@@ -44,7 +44,7 @@ public:
     //void UnbindWndCtx2D(std::shared_ptr<pt2::WindowContext>& wc) const;
     //void UnbindWndCtx3D(std::shared_ptr<pt3::WindowContext>& wc) const;
 
-	void Flush(const ur2::Device& dev, ur2::Context& ctx);
+	void Flush(const ur::Device& dev, ur::Context& ctx);
 
 private:
 	std::array<std::shared_ptr<IRenderer>, static_cast<int>(RenderType::MAX_COUNT)> m_renderers;

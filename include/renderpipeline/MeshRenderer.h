@@ -4,7 +4,7 @@
 #include "renderpipeline/RendererImpl.h"
 
 #include <SM_Vector.h>
-#include <unirender2/ShaderProgram.h>
+#include <unirender/ShaderProgram.h>
 #include <painting0/Material.h>
 #include <painting0/RenderContext.h>
 
@@ -25,16 +25,16 @@ struct MeshVertex
 class MeshRenderer : public IRenderer, private RendererImpl<MeshVertex, unsigned short>, private boost::noncopyable
 {
 public:
-    MeshRenderer(const ur2::Device& dev);
+    MeshRenderer(const ur::Device& dev);
 
-    virtual void Flush(ur2::Context& ctx) override {}
+    virtual void Flush(ur::Context& ctx) override {}
 
-    void Draw(ur2::Context& ur_ctx, const model::MeshGeometry& mesh, const pt0::Material& material,
-        const pt0::RenderContext& ctx, const std::shared_ptr<ur2::ShaderProgram>& shader = nullptr,
+    void Draw(ur::Context& ur_ctx, const model::MeshGeometry& mesh, const pt0::Material& material,
+        const pt0::RenderContext& ctx, const std::shared_ptr<ur::ShaderProgram>& shader = nullptr,
         bool face = true) const;
 
 private:
-    void InitShader(const ur2::Device& dev);
+    void InitShader(const ur::Device& dev);
 
     enum class ShaderType
     {
@@ -43,10 +43,10 @@ private:
         Color
     };
 
-    static std::shared_ptr<ur2::ShaderProgram>
-        CreateFaceShader(const ur2::Device& dev, ShaderType type);
-    static std::shared_ptr<ur2::ShaderProgram>
-        CreateEdgeShader(const ur2::Device& dev);
+    static std::shared_ptr<ur::ShaderProgram>
+        CreateFaceShader(const ur::Device& dev, ShaderType type);
+    static std::shared_ptr<ur::ShaderProgram>
+        CreateEdgeShader(const ur::Device& dev);
 
 }; // MeshRenderer
 

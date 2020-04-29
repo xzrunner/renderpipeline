@@ -22,14 +22,14 @@ struct MorphVertex
 class MorphRenderer : public IRenderer, private RendererImpl<MorphVertex, unsigned short>, private boost::noncopyable
 {
 public:
-    MorphRenderer(const ur2::Device& dev);
+    MorphRenderer(const ur::Device& dev);
 
-    virtual void Flush(ur2::Context& ctx) override {}
+    virtual void Flush(ur::Context& ctx) override {}
 
     void Draw() const;
 
 private:
-    void InitShader(const ur2::Device& dev);
+    void InitShader(const ur::Device& dev);
 
 }; // MorphRenderer
 

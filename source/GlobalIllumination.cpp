@@ -1,7 +1,7 @@
 #include "renderpipeline/GlobalIllumination.h"
 #include "renderpipeline/Utility.h"
 
-#include <unirender2/Texture.h>
+#include <unirender/Texture.h>
 #include <painting3/GlobalIllumination.h>
 #include <rendergraph/RenderContext.h>
 #include <rendergraph/node/Texture.h>

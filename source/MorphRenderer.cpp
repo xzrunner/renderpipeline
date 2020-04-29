@@ -1,8 +1,8 @@
 #include "renderpipeline/MorphRenderer.h"
 #include "renderpipeline/UniformNames.h"
 
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting0/CamPosUpdater.h>
 #include <painting3/Shader.h>
@@ -37,7 +37,7 @@ const char* VERT_POSE2_NORMAL_NAME = "pose2_normal";
 namespace rp
 {
 
-MorphRenderer::MorphRenderer(const ur2::Device& dev)
+MorphRenderer::MorphRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
     InitShader(dev);
@@ -48,24 +48,24 @@ void MorphRenderer::Draw() const
 //    m_shaders[0]->Bind();
 }
 
-void MorphRenderer::InitShader(const ur2::Device& dev)
+void MorphRenderer::InitShader(const ur::Device& dev)
 {
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSE1_VERTEX_NAME
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 24
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 24
     );
     // VERT_POSE1_NORMAL_NAME
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 12, 24
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 12, 24
     );
     // VERT_TEXCOORD_NAME
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 0, 0
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 0, 0
     );
 
  //   std::vector<ur::VertexAttrib> layout;

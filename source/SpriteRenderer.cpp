@@ -10,11 +10,11 @@
 #include <painting2/Shader.h>
 #include <painting2/ViewMatUpdater.h>
 #include <painting2/ProjectMatUpdater.h>
-#include <unirender2/ShaderProgram.h>
-#include <unirender2/VertexBufferAttribute.h>
-#include <unirender2/Texture.h>
-#include <unirender2/TextureTarget.h>
-#include <unirender2/Factory.h>
+#include <unirender/ShaderProgram.h>
+#include <unirender/VertexBufferAttribute.h>
+#include <unirender/Texture.h>
+#include <unirender/TextureTarget.h>
+#include <unirender/Factory.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -51,29 +51,29 @@ void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex, 
 namespace rp
 {
 
-SpriteRenderer::SpriteRenderer(const ur2::Device& dev)
+SpriteRenderer::SpriteRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
 	InitShader(dev);
 
 	m_palette = std::make_unique<tess::Palette>(dev);
 
-    m_rs = ur2::DefaultRenderState2D();
+    m_rs = ur::DefaultRenderState2D();
 }
 
-void SpriteRenderer::Flush(ur2::Context& ctx)
+void SpriteRenderer::Flush(ur::Context& ctx)
 {
     ctx.SetTexture(0, m_tex);
 
     auto fbo = ctx.GetFramebuffer();
     ctx.SetFramebuffer(m_fbo);
-    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, m_rs, m_shaders[0]);
+    FlushBuffer(ctx, ur::PrimitiveType::Triangles, m_rs, m_shaders[0]);
     ctx.SetFramebuffer(fbo);
 }
 
-void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
+void SpriteRenderer::DrawQuad(ur::Context& ctx, const ur::RenderState& rs,
                               const float* positions, const float* texcoords,
-                              const ur2::TexturePtr& tex, uint32_t color)
+                              const ur::TexturePtr& tex, uint32_t color)
 {
     if (m_buf.vertices.empty())
     {
@@ -123,7 +123,7 @@ void SpriteRenderer::DrawQuad(ur2::Context& ctx, const ur2::RenderState& rs,
 	m_buf.curr_index += 4;
 }
 
-void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
+void SpriteRenderer::DrawPainter(ur::Context& ctx, const ur::RenderState& rs,
                                  const tess::Painter& pt, const sm::mat4& mat)
 {
 	if (pt.IsEmpty()) {
@@ -153,7 +153,7 @@ void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
 		int tex_w = p_tex->GetWidth();
 		int tex_h = p_tex->GetHeight();
 		sm::irect qr(0, 0, tex_w, tex_h);
-        ur2::TexturePtr cached_tex = nullptr;
+        ur::TexturePtr cached_tex = nullptr;
 		auto cached_texcoords = Callback::QueryCachedTexQuad(tex_id, qr, cached_tex);
 		if (cached_texcoords)
 		{
@@ -195,21 +195,21 @@ void SpriteRenderer::DrawPainter(ur2::Context& ctx, const ur2::RenderState& rs,
 	}
 }
 
-void SpriteRenderer::InitShader(const ur2::Device& dev)
+void SpriteRenderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // vec2 position
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 0, 20
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 0, 20
     );
     // vec2 texcoord
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 8, 20
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 8, 20
     );
     // vec4 color
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::UnsignedByte, 4, 16, 20
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::UnsignedByte, 4, 16, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

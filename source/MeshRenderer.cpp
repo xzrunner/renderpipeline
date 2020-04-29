@@ -17,9 +17,9 @@
 #include <shaderweaver/node/FragmentShader.h>
 #include <shaderweaver/node/SampleTex2D.h>
 #include <shaderweaver/node/Multiply.h>
-#include <unirender2/DrawState.h>
-#include <unirender2/Context.h>
-#include <unirender2/VertexBufferAttribute.h>
+#include <unirender/DrawState.h>
+#include <unirender/Context.h>
+#include <unirender/VertexBufferAttribute.h>
 #include <painting0/Material.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting0/CamPosUpdater.h>
@@ -48,20 +48,20 @@ enum ShaderType
 namespace rp
 {
 
-MeshRenderer::MeshRenderer(const ur2::Device& dev)
+MeshRenderer::MeshRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
     InitShader(dev);
 }
 
-void MeshRenderer::Draw(ur2::Context& ur_ctx,
+void MeshRenderer::Draw(ur::Context& ur_ctx,
                         const model::MeshGeometry& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx,
-                        const std::shared_ptr<ur2::ShaderProgram>& shader,
+                        const std::shared_ptr<ur::ShaderProgram>& shader,
                         bool face) const
 {
-    std::shared_ptr<ur2::ShaderProgram> sd = shader;
+    std::shared_ptr<ur::ShaderProgram> sd = shader;
     if (!sd)
     {
         if (face) {
@@ -88,20 +88,20 @@ void MeshRenderer::Draw(ur2::Context& ur_ctx,
         return;
     }
 
-    auto mode = face ? ur2::PrimitiveType::Triangles : ur2::PrimitiveType::Lines;
+    auto mode = face ? ur::PrimitiveType::Triangles : ur::PrimitiveType::Lines;
 
-    ur2::DrawState draw;
+    ur::DrawState draw;
     draw.program = shader;
     draw.vertex_array = geo.vertex_array;
 	for (auto& sub : geo.sub_geometries)
     {
         draw.offset = sub.offset;
         draw.count = sub.count;
-        ur_ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
+        ur_ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
 	}
 }
 
-void MeshRenderer::InitShader(const ur2::Device& dev)
+void MeshRenderer::InitShader(const ur::Device& dev)
 {
     m_shaders.resize(SHADER_MAX_COUNT);
 
@@ -111,52 +111,52 @@ void MeshRenderer::InitShader(const ur2::Device& dev)
     m_shaders[SHADER_EDGE]         = CreateEdgeShader(dev);
 }
 
-std::shared_ptr<ur2::ShaderProgram>
-MeshRenderer::CreateFaceShader(const ur2::Device& dev, ShaderType type)
+std::shared_ptr<ur::ShaderProgram>
+MeshRenderer::CreateFaceShader(const ur::Device& dev, ShaderType type)
 {
     //////////////////////////////////////////////////////////////////////////
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs;
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs;
     switch (type)
     {
     case ShaderType::Base:
         // VERT_POSITION_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 0, 24
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 0, 24
         ));
         // VERT_NORMAL_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 12, 24
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 12, 24
         ));
         break;
     case ShaderType::Texture:
         // VERT_POSITION_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 0, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 0, 32
         ));
         // VERT_NORMAL_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 12, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 12, 32
         ));
         // VERT_TEXCOORD_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 2, 24, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 2, 24, 32
         ));
         break;
     case ShaderType::Color:
         // VERT_POSITION_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 0, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 0, 32
         ));
         // VERT_NORMAL_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 12, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 12, 32
         ));
         // VERT_COLOR_NAME
-        vbuf_attrs.push_back(std::make_shared<ur2::VertexBufferAttribute>(
-            ur2::ComponentDataType::Float, 3, 24, 32
+        vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
+            ur::ComponentDataType::Float, 3, 24, 32
         ));
         break;
     default:
@@ -332,22 +332,22 @@ MeshRenderer::CreateFaceShader(const ur2::Device& dev, ShaderType type)
     return shader;
 }
 
-std::shared_ptr<ur2::ShaderProgram>
-MeshRenderer::CreateEdgeShader(const ur2::Device& dev)
+std::shared_ptr<ur::ShaderProgram>
+MeshRenderer::CreateEdgeShader(const ur::Device& dev)
 {
     // layout
-    std::vector<std::shared_ptr<ur2::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSITION_NAME
-    vbuf_attrs[0] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 0, 32
+    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 0, 32
     );
     // VERT_NORMAL_NAME
-    vbuf_attrs[1] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 3, 12, 32
+    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 3, 12, 32
     );
     // VERT_TEXCOORD_NAME
-    vbuf_attrs[2] = std::make_shared<ur2::VertexBufferAttribute>(
-        ur2::ComponentDataType::Float, 2, 24, 32
+    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+        ur::ComponentDataType::Float, 2, 24, 32
     );
 
 	// vert

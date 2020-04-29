@@ -2,7 +2,7 @@
 
 #include "renderpipeline/IRenderer.h"
 
-namespace ur2 { class Device; class Context; class Texture; }
+namespace ur { class Device; class Context; class Texture; }
 
 namespace rp
 {
@@ -10,15 +10,15 @@ namespace rp
 class SkyboxRenderer : public IRenderer
 {
 public:
-    SkyboxRenderer(const ur2::Device& dev);
+    SkyboxRenderer(const ur::Device& dev);
 
-    virtual void Flush(ur2::Context& ctx) override {}
+    virtual void Flush(ur::Context& ctx) override {}
 
-    void Draw(const ur2::Device& dev, ur2::Context& ctx,
-        const ur2::Texture& cube_tex) const;
+    void Draw(const ur::Device& dev, ur::Context& ctx,
+        const ur::Texture& cube_tex) const;
 
 private:
-    void InitShader(const ur2::Device& dev);
+    void InitShader(const ur::Device& dev);
 
 }; // SkyboxRenderer
 

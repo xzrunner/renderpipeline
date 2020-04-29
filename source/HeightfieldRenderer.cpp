@@ -3,12 +3,12 @@
 #include <heightfield/HeightField.h>
 #include <painting0/Shader.h>
 #include <painting0/ModelMatUpdater.h>
-#include <unirender2/ShaderProgram.h>
+#include <unirender/ShaderProgram.h>
 
 namespace rp
 {
 
-HeightfieldRenderer::HeightfieldRenderer(const ur2::Device& dev)
+HeightfieldRenderer::HeightfieldRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
 }
@@ -18,13 +18,13 @@ void HeightfieldRenderer::Clear()
     m_hf.reset();
 }
 
-void HeightfieldRenderer::Draw(ur2::Context& ctx, const sm::mat4& mt) const
+void HeightfieldRenderer::Draw(ur::Context& ctx, const sm::mat4& mt) const
 {
     if (m_shaders.empty() || !m_hf) {
         return;
     }
 
-    auto model_updater = m_shaders[0]->QueryUniformUpdater(ur2::GetUpdaterTypeID<pt0::ModelMatUpdater>());
+    auto model_updater = m_shaders[0]->QueryUniformUpdater(ur::GetUpdaterTypeID<pt0::ModelMatUpdater>());
     if (model_updater) {
         std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mt);
     }
@@ -32,7 +32,7 @@ void HeightfieldRenderer::Draw(ur2::Context& ctx, const sm::mat4& mt) const
     DrawVertBuf(ctx);
 }
 
-void HeightfieldRenderer::BuildVertBuf(ur2::Context& ctx)
+void HeightfieldRenderer::BuildVertBuf(ur::Context& ctx)
 {
     const auto w = m_hf->Width();
     const auto h = m_hf->Height();
@@ -63,18 +63,18 @@ void HeightfieldRenderer::BuildVertBuf(ur2::Context& ctx)
     }
 
     assert(m_shaders.size() == 1);
-    ur2::RenderState rs;
-    FlushBuffer(ctx, ur2::PrimitiveType::Triangles, rs, m_shaders[0]);
+    ur::RenderState rs;
+    FlushBuffer(ctx, ur::PrimitiveType::Triangles, rs, m_shaders[0]);
 }
 
-void HeightfieldRenderer::DrawVertBuf(ur2::Context& ctx) const
+void HeightfieldRenderer::DrawVertBuf(ur::Context& ctx) const
 {
     assert(m_shaders.size() == 1);
 
-    ur2::DrawState draw;
+    ur::DrawState draw;
     draw.program = m_shaders[0];
     draw.vertex_array = m_va;
-    ctx.Draw(ur2::PrimitiveType::Triangles, draw, nullptr);
+    ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
 }
 
 }
