@@ -29,9 +29,8 @@ public:
 
     virtual void Flush(ur::Context& ctx) override {}
 
-    void Draw(ur::Context& ur_ctx, const model::MeshGeometry& mesh, const pt0::Material& material,
-        const pt0::RenderContext& ctx, const std::shared_ptr<ur::ShaderProgram>& shader = nullptr,
-        bool face = true) const;
+    void Draw(ur::Context& ur_ctx, const ur::DrawState& ds, const model::MeshGeometry& mesh,
+        const pt0::Material& material, const pt0::RenderContext& ctx, bool face = true) const;
 
 private:
     void InitShader(const ur::Device& dev);

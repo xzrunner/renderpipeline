@@ -55,33 +55,33 @@ MeshRenderer::MeshRenderer(const ur::Device& dev)
 }
 
 void MeshRenderer::Draw(ur::Context& ur_ctx,
+                        const ur::DrawState& ds,
                         const model::MeshGeometry& mesh,
                         const pt0::Material& material,
                         const pt0::RenderContext& ctx,
-                        const std::shared_ptr<ur::ShaderProgram>& shader,
                         bool face) const
 {
-    std::shared_ptr<ur::ShaderProgram> sd = shader;
-    if (!sd)
+    auto _ds = ds;
+    if (!ds.program)
     {
         if (face) {
             if ((mesh.vertex_type & model::VERTEX_FLAG_TEXCOORDS) &&
                 material.FetchVar(pt3::MaterialMgr::PhongUniforms::diffuse_tex.name) != nullptr) {
-                sd = m_shaders[SHADER_FACE_TEXTURE];
+                _ds.program = m_shaders[SHADER_FACE_TEXTURE];
             } else if (mesh.vertex_type & model::VERTEX_FLAG_COLOR) {
-                sd = m_shaders[SHADER_FACE_COLOR];
+                _ds.program = m_shaders[SHADER_FACE_COLOR];
             } else {
-                sd = m_shaders[SHADER_FACE_BASE];
+                _ds.program = m_shaders[SHADER_FACE_BASE];
             }
         } else {
-            sd = m_shaders[SHADER_EDGE];
+            _ds.program = m_shaders[SHADER_EDGE];
         }
     }
-    assert(sd);
+    assert(_ds.program);
 
 //    sd->Bind();
-    material.Bind(*sd);
-    ctx.Bind(*sd);
+    material.Bind(*_ds.program);
+    ctx.Bind(*_ds.program);
 
 	auto& geo = mesh;
     if (!geo.vertex_array) {
@@ -89,15 +89,12 @@ void MeshRenderer::Draw(ur::Context& ur_ctx,
     }
 
     auto mode = face ? ur::PrimitiveType::Triangles : ur::PrimitiveType::Lines;
-
-    ur::DrawState draw;
-    draw.program = shader;
-    draw.vertex_array = geo.vertex_array;
+    _ds.vertex_array = geo.vertex_array;
 	for (auto& sub : geo.sub_geometries)
     {
-        draw.offset = sub.offset;
-        draw.count = sub.count;
-        ur_ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
+        _ds.offset = sub.offset;
+        _ds.count = sub.count;
+        ur_ctx.Draw(mode, _ds, nullptr);
 	}
 }
 
