@@ -119,11 +119,11 @@ void HeightfieldGrayRenderer::Setup(const ur::Device& dev, ur::Context& ctx,
     m_normal_map = terraingraph::TextureBaker::GenNormalMap(*hf, rc);
 #endif // BUILD_NORMAL_MAP
 
-    // textures
-    m_height_map->Bind();
-#ifdef BUILD_NORMAL_MAP
-    m_normal_map->Bind();
-#endif // BUILD_NORMAL_MAP
+//    // textures
+//    m_height_map->Bind();
+//#ifdef BUILD_NORMAL_MAP
+//    m_normal_map->Bind();
+//#endif // BUILD_NORMAL_MAP
 
     // vertex buffer
     if (!old ||
@@ -148,6 +148,17 @@ void HeightfieldGrayRenderer::Clear()
     HeightfieldRenderer::Clear();
 
     m_height_map.reset();
+}
+
+void HeightfieldGrayRenderer::BeforeDraw(ur::Context& ctx) const
+{
+    assert(m_shaders.size() == 1);
+    auto shader = m_shaders.front();
+
+    ctx.SetTexture(shader->QueryTexSlot("u_heightmap"), m_height_map);
+#ifdef BUILD_NORMAL_MAP
+    ctx.SetTexture(shader->QueryTexSlot("u_normal_map"), m_normal_map);
+#endif // BUILD_NORMAL_MAP
 }
 
 void HeightfieldGrayRenderer::InitShader(const ur::Device& dev)

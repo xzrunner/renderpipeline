@@ -5,12 +5,15 @@
 #include <painting0/ModelMatUpdater.h>
 #include <unirender/ShaderProgram.h>
 
+#include <unirender/Factory.h>
+
 namespace rp
 {
 
 HeightfieldRenderer::HeightfieldRenderer(const ur::Device& dev)
     : RendererImpl(dev)
 {
+    m_va->GetIndexBuffer()->SetDataType(ur::IndexBufferDataType::UnsignedInt);
 }
 
 void HeightfieldRenderer::Clear()
@@ -18,7 +21,8 @@ void HeightfieldRenderer::Clear()
     m_hf.reset();
 }
 
-void HeightfieldRenderer::Draw(ur::Context& ctx, const sm::mat4& mt) const
+void HeightfieldRenderer::Draw(const ur::Device& dev, ur::Context& ctx,
+                               const pt3::WindowContext& wc, const sm::mat4& mt) const
 {
     if (m_shaders.empty() || !m_hf) {
         return;
@@ -29,7 +33,8 @@ void HeightfieldRenderer::Draw(ur::Context& ctx, const sm::mat4& mt) const
         std::static_pointer_cast<pt0::ModelMatUpdater>(model_updater)->Update(mt);
     }
 
-    DrawVertBuf(ctx);
+    BeforeDraw(ctx);
+    DrawVertBuf(ctx, wc);
 }
 
 void HeightfieldRenderer::BuildVertBuf(ur::Context& ctx)
@@ -67,14 +72,20 @@ void HeightfieldRenderer::BuildVertBuf(ur::Context& ctx)
     FlushBuffer(ctx, ur::PrimitiveType::Triangles, rs, m_shaders[0]);
 }
 
-void HeightfieldRenderer::DrawVertBuf(ur::Context& ctx) const
+void HeightfieldRenderer::DrawVertBuf(ur::Context& ctx, const pt3::WindowContext& wc) const
 {
     assert(m_shaders.size() == 1);
 
-    ur::DrawState draw;
-    draw.program = m_shaders[0];
-    draw.vertex_array = m_va;
-    ctx.Draw(ur::PrimitiveType::Triangles, draw, nullptr);
+    ur::RenderState rs;
+    rs.facet_culling.enabled = false;
+    rs.depth_test.enabled = false;
+
+    ur::DrawState ds;
+    ds.render_state = rs;
+    ds.program      = m_shaders[0];
+    ds.vertex_array = m_va;
+
+    ctx.Draw(ur::PrimitiveType::Triangles, ds, &wc);
 }
 
 }

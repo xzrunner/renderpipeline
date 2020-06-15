@@ -9,6 +9,7 @@
 #include <boost/noncopyable.hpp>
 
 namespace hf { class HeightField; }
+namespace pt3 { class WindowContext; }
 
 namespace rp
 {
@@ -42,11 +43,14 @@ public:
     virtual void Setup(const ur::Device& dev, ur::Context& ctx,
         const std::shared_ptr<hf::HeightField>& hf) = 0;
 
-    void Draw(ur::Context& ctx, const sm::mat4& mt = sm::mat4()) const;
+    void Draw(const ur::Device& dev, ur::Context& ctx, const pt3::WindowContext& wc,
+        const sm::mat4& mt = sm::mat4()) const;
 
 protected:
+    virtual void BeforeDraw(ur::Context& ctx) const {}
+
     void BuildVertBuf(ur::Context& ctx);
-    void DrawVertBuf(ur::Context& ctx) const;
+    void DrawVertBuf(ur::Context& ctx, const pt3::WindowContext& wc) const;
 
 protected:
     std::shared_ptr<hf::HeightField> m_hf = nullptr;
