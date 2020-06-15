@@ -201,15 +201,15 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // vec2 position
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 0, 20
+        0, ur::ComponentDataType::Float, 2, 0, 20
     );
     // vec2 texcoord
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 8, 20
+        1, ur::ComponentDataType::Float, 2, 8, 20
     );
     // vec4 color
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::UnsignedByte, 4, 16, 20
+        2, ur::ComponentDataType::UnsignedByte, 4, 16, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

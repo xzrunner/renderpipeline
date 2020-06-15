@@ -52,15 +52,15 @@ void BSPRenderer::InitShader(const ur::Device& dev)
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSITION_NAME - position
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 0, 28
+        0, ur::ComponentDataType::Float, 3, 0, 28
     );
     // VERT_TEXCOORD_NAME - texcoord
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 12, 28
+        1, ur::ComponentDataType::Float, 2, 12, 28
     );
     // VERT_TEXCOORD_LIGHT_NAME - texcoord_light
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 20, 28
+        2, ur::ComponentDataType::Float, 2, 20, 28
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
 

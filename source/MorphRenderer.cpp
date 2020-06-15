@@ -57,15 +57,15 @@ void MorphRenderer::InitShader(const ur::Device& dev)
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSE1_VERTEX_NAME
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 0, 24
+        0, ur::ComponentDataType::Float, 3, 0, 24
     );
     // VERT_POSE1_NORMAL_NAME
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 12, 24
+        1, ur::ComponentDataType::Float, 3, 12, 24
     );
     // VERT_TEXCOORD_NAME
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 0, 0
+        2, ur::ComponentDataType::Float, 2, 0, 0
     );
 
  //   std::vector<ur::VertexAttrib> layout;

@@ -90,13 +90,13 @@ void VolumeRenderer::InitShader(const ur::Device& dev)
 	// layout
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 0, 28
+        0, ur::ComponentDataType::Float, 3, 0, 28
     );
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 12, 28
+        1, ur::ComponentDataType::Float, 3, 12, 28
     );
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::UnsignedByte, 4, 24, 28
+        2, ur::ComponentDataType::UnsignedByte, 4, 24, 28
     );
 
 	// vert

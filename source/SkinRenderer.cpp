@@ -107,19 +107,19 @@ SkinRenderer::BuildShader(const ur::Device& dev, bool tex_map)
 
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(5);
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 0, 40
+        0, ur::ComponentDataType::Float, 3, 0, 40
     );
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 12, 40
+        1, ur::ComponentDataType::Float, 3, 12, 40
     );
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 24, 40
+        2, ur::ComponentDataType::Float, 2, 24, 40
     );
     vbuf_attrs[3] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::UnsignedByte, 4, 32, 40
+        3, ur::ComponentDataType::UnsignedByte, 4, 32, 40
     );
     vbuf_attrs[4] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::UnsignedByte, 4, 36, 40
+        4, ur::ComponentDataType::UnsignedByte, 4, 36, 40
     );
 
     //////////////////////////////////////////////////////////////////////////

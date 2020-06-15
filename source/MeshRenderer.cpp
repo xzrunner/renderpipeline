@@ -121,39 +121,39 @@ MeshRenderer::CreateFaceShader(const ur::Device& dev, ShaderType type)
     case ShaderType::Base:
         // VERT_POSITION_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 0, 24
+            0, ur::ComponentDataType::Float, 3, 0, 24
         ));
         // VERT_NORMAL_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 12, 24
+            1, ur::ComponentDataType::Float, 3, 12, 24
         ));
         break;
     case ShaderType::Texture:
         // VERT_POSITION_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 0, 32
+            0, ur::ComponentDataType::Float, 3, 0, 32
         ));
         // VERT_NORMAL_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 12, 32
+            1, ur::ComponentDataType::Float, 3, 12, 32
         ));
         // VERT_TEXCOORD_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 2, 24, 32
+            2, ur::ComponentDataType::Float, 2, 24, 32
         ));
         break;
     case ShaderType::Color:
         // VERT_POSITION_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 0, 32
+            0, ur::ComponentDataType::Float, 3, 0, 32
         ));
         // VERT_NORMAL_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 12, 32
+            1, ur::ComponentDataType::Float, 3, 12, 32
         ));
         // VERT_COLOR_NAME
         vbuf_attrs.push_back(std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 3, 24, 32
+            2, ur::ComponentDataType::Float, 3, 24, 32
         ));
         break;
     default:
@@ -336,15 +336,15 @@ MeshRenderer::CreateEdgeShader(const ur::Device& dev)
     std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
     // VERT_POSITION_NAME
     vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 0, 32
+        0, ur::ComponentDataType::Float, 3, 0, 32
     );
     // VERT_NORMAL_NAME
     vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 3, 12, 32
+        1, ur::ComponentDataType::Float, 3, 12, 32
     );
     // VERT_TEXCOORD_NAME
     vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
-        ur::ComponentDataType::Float, 2, 24, 32
+        2, ur::ComponentDataType::Float, 2, 24, 32
     );
 
 	// vert

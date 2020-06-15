@@ -79,11 +79,11 @@ void ExternRenderer::InitRenderData(const ur::Device& dev)
         std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
         // pos
         vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 2, 0, 16
+            0, ur::ComponentDataType::Float, 2, 0, 16
         );
         // tex
         vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 2, 8, 16
+            1, ur::ComponentDataType::Float, 2, 8, 16
         );
         m_va_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}
@@ -111,7 +111,7 @@ void ExternRenderer::InitRenderData(const ur::Device& dev)
         std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(1);
         // pos
         vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
-            ur::ComponentDataType::Float, 2, 0, 8
+            0, ur::ComponentDataType::Float, 2, 0, 8
         );
         m_va_no_tex->SetVertexBufferAttrs(vbuf_attrs);
 	}
