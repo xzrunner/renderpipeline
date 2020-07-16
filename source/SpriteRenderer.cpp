@@ -46,6 +46,53 @@ void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex, 
 	dst.curr_index += static_cast<unsigned short>(src.vertices.size());
 }
 
+const char* vs = R"(
+#version 450
+
+layout(location = 0) in vec2 position;
+layout(location = 1) in vec2 texcoord;
+layout(location = 2) in vec4 color;
+
+layout(std140) uniform MPV 
+{
+	mat4 u_model;
+	mat4 u_projection;
+	mat4 u_view;
+};
+
+//uniform mat4 u_model;
+//uniform mat4 u_projection;
+//uniform mat4 u_view;
+
+layout(location = 0) out vec4 v_color;
+layout(location = 1) out vec2 v_texcoord;
+
+void main()
+{
+	v_color = color;
+	v_texcoord = texcoord;
+
+	vec4 pos = u_projection * u_view * u_model * vec4(position, 0.0, 1.0);
+	gl_Position = pos;
+}
+)";
+
+const char* fs = R"(
+#version 450
+
+uniform sampler2D u_texture0;
+
+layout(location = 0) in vec4 v_color;
+layout(location = 1) in vec2 v_texcoord;
+
+layout(location = 0) out vec4 FragColor;
+
+void main()
+{
+	FragColor = texture(u_texture0, v_texcoord) * v_color;
+}
+)";
+
 }
 
 namespace rp
@@ -272,7 +319,8 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
         "texcoord",
         "color",
     };
-    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr(), "", attr_names);
+
+    auto shader = dev.CreateShaderProgram(vs, fs, "", attr_names);
     shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
     shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
     shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
