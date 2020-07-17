@@ -15,6 +15,7 @@
 #include <unirender/Texture.h>
 #include <unirender/TextureTarget.h>
 #include <unirender/Factory.h>
+#include <shadertrans/ShaderTrans.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
 #include <shaderweaver/node/ShaderUniform.h>
@@ -55,10 +56,10 @@ layout(location = 2) in vec4 color;
 
 layout(std140) uniform MPV 
 {
-	mat4 u_model;
-	mat4 u_projection;
-	mat4 u_view;
-};
+	mat4 model;
+	mat4 projection;
+	mat4 view;
+} u_mpv;
 
 //uniform mat4 u_model;
 //uniform mat4 u_projection;
@@ -72,7 +73,7 @@ void main()
 	v_color = color;
 	v_texcoord = texcoord;
 
-	vec4 pos = u_projection * u_view * u_model * vec4(position, 0.0, 1.0);
+	vec4 pos = u_mpv.projection * u_mpv.view * u_mpv.model * vec4(position, 0.0, 1.0);
 	gl_Position = pos;
 }
 )";
@@ -91,6 +92,63 @@ void main()
 {
 	FragColor = texture(u_texture0, v_texcoord) * v_color;
 }
+)";
+
+const char* hlsl_vs = R"(
+
+struct VS_INPUT
+{
+	float2 position : POSITION;
+	float2 texcoord : TEXCOORD;
+	float4 color    : COLOR;
+};
+
+cbuffer u_mpv
+{
+	float4x4 model;
+	float4x4 projection;
+	float4x4 view;
+}
+
+struct VS_OUTPUT
+{
+	float4 position : SV_Position;
+	float4 color    : COLOR;
+	float2 texcoord : TEXCOORD;
+};
+
+VS_OUTPUT main(VS_INPUT IN)
+{
+	VS_OUTPUT OUT = (VS_OUTPUT)0;
+
+	OUT.color = IN.color;
+	OUT.texcoord = IN.texcoord;
+
+	OUT.position = mul(projection, mul(view, mul(view, float4(IN.position, 0.0, 1.0))));
+
+	return OUT;
+}
+
+)";
+
+const char* hlsl_fs = R"(
+
+Texture2D ColorTexture;
+SamplerState ColorSampler;
+
+struct VS_OUTPUT
+{
+	float4 position : SV_Position;
+	float4 color    : COLOR;
+	float2 texcoord : TEXCOORD;
+};
+
+float4 main(VS_OUTPUT IN) : SV_TARGET
+{
+	float4 color = ColorTexture.Sample(ColorSampler, IN.texcoord);
+	return color * IN.color;
+}
+
 )";
 
 }
@@ -320,10 +378,16 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
         "color",
     };
 
-    auto shader = dev.CreateShaderProgram(vs, fs, "", attr_names);
-    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
-    shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
-    shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+	std::vector<unsigned int> _vs, _fs;
+	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, vs, _vs);
+	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
+	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, hlsl_vs, _vs);
+	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, hlsl_fs, _fs);
+    auto shader = dev.CreateShaderProgram(_vs, _fs);
+
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, "u_mpv.model"));
+    shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, "u_mpv.view"));
+    shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, "u_mpv.projection"));
 
     m_shaders.resize(1);
     m_shaders[0] = shader;
