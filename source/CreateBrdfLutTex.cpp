@@ -11,6 +11,7 @@
 #include <unirender/Framebuffer.h>
 #include <unirender/DrawState.h>
 #include <unirender/ClearState.h>
+#include <shadertrans/ShaderTrans.h>
 
 namespace rp
 {
@@ -70,8 +71,12 @@ ur::TexturePtr CreateBrdfLutTex(const ur::Device& dev, ur::Context& ctx)
     clear.color.FromRGBA(0x88888888);
     ctx.Clear(clear);
 
+    std::vector<unsigned int> vs, fs;
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, brdf_vs, vs);
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, brdf_fs, fs);
+
     ur::DrawState ds;
-    ds.program = dev.CreateShaderProgram(brdf_vs, brdf_fs);
+    ds.program = dev.CreateShaderProgram(vs, fs);
     ds.vertex_array = dev.GetVertexArray(ur::Device::PrimitiveType::Quad, ur::VertexLayoutType::PosTex);
     ctx.Draw(ur::PrimitiveType::TriangleStrip, ds, nullptr);
 

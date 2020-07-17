@@ -14,6 +14,7 @@
 #include <unirender/Framebuffer.h>
 #include <unirender/ClearState.h>
 #include <unirender/DrawState.h>
+#include <shadertrans/ShaderTrans.h>
 
 namespace rp
 {
@@ -89,7 +90,10 @@ ur::TexturePtr CreatePrefilterCubemap(const ur::Device& dev, ur::Context& ctx, c
     desc.gen_mipmaps = true;
     auto prefilter_map = dev.CreateTexture(desc);
 
-    auto shader = dev.CreateShaderProgram(cubemap_vs, prefilter_fs);
+    std::vector<unsigned int> vs, fs;
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, cubemap_vs, vs);
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, prefilter_fs, fs);
+    auto shader = dev.CreateShaderProgram(vs, fs);
 
     ur::DrawState ds;
     ds.program = shader;

@@ -14,6 +14,7 @@
 #include <unirender/Framebuffer.h>
 #include <unirender/ClearState.h>
 #include <unirender/DrawState.h>
+#include <shadertrans/ShaderTrans.h>
 
 namespace rp
 {
@@ -79,7 +80,10 @@ ur::TexturePtr CreateIrradianceCubemap(const ur::Device& dev, ur::Context& ctx,
     desc.format = ur::TextureFormat::RGB16F;
     auto irr_cubemap = dev.CreateTexture(desc);
 
-    auto shader = dev.CreateShaderProgram(cubemap_vs, irradiance_convolution_fs);
+    std::vector<unsigned int> vs, fs;
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, cubemap_vs, vs);
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, irradiance_convolution_fs, fs);
+    auto shader = dev.CreateShaderProgram(vs, fs);
 
     ur::DrawState ds;
     ds.program = shader;

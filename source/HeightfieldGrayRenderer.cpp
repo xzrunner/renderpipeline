@@ -5,6 +5,7 @@
 #include <unirender/ShaderProgram.h>
 #include <unirender/ComponentDataType.h>
 #include <unirender/VertexBufferAttribute.h>
+#include <shadertrans/ShaderTrans.h>
 #include <renderpipeline/UniformNames.h>
 #include <painting0/ShaderUniforms.h>
 #include <painting0/ModelMatUpdater.h>
@@ -180,7 +181,10 @@ void HeightfieldGrayRenderer::InitShader(const ur::Device& dev)
         "#define BUILD_NORMAL_MAP\n" + std::string(fs)
     );
 #else
-    auto shader = dev.CreateShaderProgram(vs, fs);
+    std::vector<unsigned int> _vs, _fs;
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, vs, _vs);
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
+    auto shader = dev.CreateShaderProgram(_vs, _fs);
 #endif // BUILD_NORMAL_MAP
 
 

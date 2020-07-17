@@ -4,6 +4,7 @@
 #include <unirender/ComponentDataType.h>
 #include <unirender/ShaderProgram.h>
 #include <unirender/VertexBufferAttribute.h>
+#include <shadertrans/ShaderTrans.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
 #include <painting3/Blackboard.h>
@@ -153,7 +154,11 @@ void VolumeRenderer::InitShader(const ur::Device& dev)
 	//printf("%s\n", frag.GenShaderStr().c_str());
 	//printf("//////////////////////////////////////////////////////////////////////////\n");
 
-    auto shader = dev.CreateShaderProgram(vert.GenShaderStr(), frag.GenShaderStr());
+	std::vector<unsigned int> vs, fs;
+	shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, vert.GenShaderStr(), vs);
+	shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, frag.GenShaderStr(), fs);
+    auto shader = dev.CreateShaderProgram(vs, fs);
+
     shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
     shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
     shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));

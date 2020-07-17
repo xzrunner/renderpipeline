@@ -14,6 +14,7 @@
 #include <unirender/Framebuffer.h>
 #include <unirender/ClearState.h>
 #include <unirender/DrawState.h>
+#include <shadertrans/ShaderTrans.h>
 
 namespace rp
 {
@@ -77,7 +78,10 @@ ur::TexturePtr HDREquirectangularToCubemap(const ur::Device& dev, ur::Context& c
     desc.format = ur::TextureFormat::RGB16F;
     auto cubemap = dev.CreateTexture(desc);
 
-    auto shader = dev.CreateShaderProgram(cubemap_vs, equirectangular_to_cubemap_fs);
+    std::vector<unsigned int> vs, fs;
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, cubemap_vs, vs);
+    shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, equirectangular_to_cubemap_fs, fs);
+    auto shader = dev.CreateShaderProgram(vs, fs);
 
     ur::DrawState ds;
     ds.program = shader;
