@@ -124,7 +124,7 @@ VS_OUTPUT main(VS_INPUT IN)
 	OUT.color = IN.color;
 	OUT.texcoord = IN.texcoord;
 
-	OUT.position = mul(projection, mul(view, mul(view, float4(IN.position, 0.0, 1.0))));
+	OUT.position = mul(mul(mul(float4(IN.position, 0.0, 1.0), model), view), projection);
 
 	return OUT;
 }
@@ -383,6 +383,12 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
 	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
 	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, hlsl_vs, _vs);
 	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, hlsl_fs, _fs);
+	if (_vs.empty() || _fs.empty()) 
+	{
+		m_shaders.resize(1);
+		m_shaders[0] = nullptr;
+		return;
+	}
     auto shader = dev.CreateShaderProgram(_vs, _fs);
 
     shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, "u_mpv.model"));
