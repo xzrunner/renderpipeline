@@ -27,6 +27,8 @@
 #include <shaderweaver/node/VertexShader.h>
 #include <shaderweaver/node/FragmentShader.h>
 
+#include <iostream>
+
 namespace
 {
 
@@ -381,8 +383,14 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
 	std::vector<unsigned int> _vs, _fs;
 	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, vs, _vs);
 	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
-	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, hlsl_vs, _vs);
-	shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, hlsl_fs, _fs);
+	try {
+		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, hlsl_vs, _vs);
+		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, hlsl_fs, _fs);
+	} catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return;
+	}
+
 	if (_vs.empty() || _fs.empty()) 
 	{
 		m_shaders.resize(1);
