@@ -3,7 +3,7 @@
 
 #include <unirender/ShaderProgram.h>
 #include <unirender/VertexArray.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <shadertrans/ShaderTrans.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
@@ -76,11 +76,11 @@ void Shape3Renderer::DrawLines(ur::Context& ctx, const ur::RenderState& rs, size
 void Shape3Renderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(2);
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 16
     );
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::UnsignedByte, 4, 12, 16
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);

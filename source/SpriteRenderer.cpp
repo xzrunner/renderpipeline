@@ -13,7 +13,7 @@
 #include <painting2/ViewMatUpdater.h>
 #include <painting2/ProjectMatUpdater.h>
 #include <unirender/ShaderProgram.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <unirender/Texture.h>
 #include <unirender/TextureTarget.h>
 #include <unirender/Factory.h>
@@ -278,17 +278,17 @@ void SpriteRenderer::DrawPainter(ur::Context& ctx, const ur::RenderState& rs,
 void SpriteRenderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(3);
     // vec2 position
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 2, 0, 20
     );
     // vec2 texcoord
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 2, 8, 20
     );
     // vec4 color
-    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[2] = std::make_shared<ur::VertexInputAttribute>(
         2, ur::ComponentDataType::UnsignedByte, 4, 16, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);
@@ -399,9 +399,9 @@ void SpriteRenderer::InitRenderer(const ur::Device& dev, const ur::Context& ctx)
 	auto vert_buf = dev.CreateVertexBuffer(ur::BufferUsageHint::DynamicDraw, 0);
 	m_va->SetVertexBuffer(vert_buf);
 	m_va->SetVertexBufferAttrs({
-        std::make_shared<ur::VertexBufferAttribute>(0, ur::ComponentDataType::Float,        2,  0, 20),		// position
-        std::make_shared<ur::VertexBufferAttribute>(1, ur::ComponentDataType::Float,        2,  8, 20),		// texcoords
-		std::make_shared<ur::VertexBufferAttribute>(2, ur::ComponentDataType::UnsignedByte, 4, 16, 20)		// color
+        std::make_shared<ur::VertexInputAttribute>(0, ur::ComponentDataType::Float,        2,  0, 20),		// position
+        std::make_shared<ur::VertexInputAttribute>(1, ur::ComponentDataType::Float,        2,  8, 20),		// texcoords
+		std::make_shared<ur::VertexInputAttribute>(2, ur::ComponentDataType::UnsignedByte, 4, 16, 20)		// color
     });
 
 	m_pipeline_layout = dev.GetPipelineLayout("single_ubo_single_img");

@@ -4,7 +4,7 @@
 #include <unirender/Texture.h>
 #include <unirender/ShaderProgram.h>
 #include <unirender/ComponentDataType.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <shadertrans/ShaderTrans.h>
 #include <renderpipeline/UniformNames.h>
 #include <painting0/ShaderUniforms.h>
@@ -164,13 +164,13 @@ void HeightfieldGrayRenderer::BeforeDraw(ur::Context& ctx) const
 
 void HeightfieldGrayRenderer::InitShader(const ur::Device& dev)
 {
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(2);
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(2);
     // rp::VERT_POSITION_NAME
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 20
     );
     // rp::VERT_TEXCOORD_NAME
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 2, 12, 20
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);

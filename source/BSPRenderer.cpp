@@ -3,7 +3,7 @@
 
 #include <unirender/Device.h>
 #include <unirender/ShaderProgram.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <unirender/VertexArray.h>
 #include <shadertrans/ShaderTrans.h>
 #include <painting0/ModelMatUpdater.h>
@@ -50,17 +50,17 @@ void BSPRenderer::InitShader(const ur::Device& dev)
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(3);
     // VERT_POSITION_NAME - position
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 28
     );
     // VERT_TEXCOORD_NAME - texcoord
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 2, 12, 28
     );
     // VERT_TEXCOORD_LIGHT_NAME - texcoord_light
-    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[2] = std::make_shared<ur::VertexInputAttribute>(
         2, ur::ComponentDataType::Float, 2, 20, 28
     );
     m_va->SetVertexBufferAttrs(vbuf_attrs);

@@ -3,7 +3,7 @@
 #include "renderpipeline/UniformNames.h"
 
 #include <unirender/ShaderProgram.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <shadertrans/ShaderTrans.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
@@ -106,20 +106,20 @@ SkinRenderer::BuildShader(const ur::Device& dev, bool tex_map)
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(5);
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(5);
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 40
     );
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 3, 12, 40
     );
-    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[2] = std::make_shared<ur::VertexInputAttribute>(
         2, ur::ComponentDataType::Float, 2, 24, 40
     );
-    vbuf_attrs[3] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[3] = std::make_shared<ur::VertexInputAttribute>(
         3, ur::ComponentDataType::UnsignedByte, 4, 32, 40
     );
-    vbuf_attrs[4] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[4] = std::make_shared<ur::VertexInputAttribute>(
         4, ur::ComponentDataType::UnsignedByte, 4, 36, 40
     );
 

@@ -2,7 +2,7 @@
 #include "renderpipeline/UniformNames.h"
 
 #include <unirender/ShaderProgram.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <shadertrans/ShaderTrans.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting0/CamPosUpdater.h>
@@ -55,17 +55,17 @@ void MorphRenderer::InitShader(const ur::Device& dev)
     // layout
     //////////////////////////////////////////////////////////////////////////
 
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(3);
     // VERT_POSE1_VERTEX_NAME
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 24
     );
     // VERT_POSE1_NORMAL_NAME
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 3, 12, 24
     );
     // VERT_TEXCOORD_NAME
-    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[2] = std::make_shared<ur::VertexInputAttribute>(
         2, ur::ComponentDataType::Float, 2, 0, 0
     );
 

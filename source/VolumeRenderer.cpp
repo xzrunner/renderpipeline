@@ -3,7 +3,7 @@
 
 #include <unirender/ComponentDataType.h>
 #include <unirender/ShaderProgram.h>
-#include <unirender/VertexBufferAttribute.h>
+#include <unirender/VertexInputAttribute.h>
 #include <shadertrans/ShaderTrans.h>
 #include <painting0/ModelMatUpdater.h>
 #include <painting3/Shader.h>
@@ -89,14 +89,14 @@ void VolumeRenderer::DrawCube(ur::Context& ctx, const ur::RenderState& rs, const
 void VolumeRenderer::InitShader(const ur::Device& dev)
 {
 	// layout
-    std::vector<std::shared_ptr<ur::VertexBufferAttribute>> vbuf_attrs(3);
-    vbuf_attrs[0] = std::make_shared<ur::VertexBufferAttribute>(
+    std::vector<std::shared_ptr<ur::VertexInputAttribute>> vbuf_attrs(3);
+    vbuf_attrs[0] = std::make_shared<ur::VertexInputAttribute>(
         0, ur::ComponentDataType::Float, 3, 0, 28
     );
-    vbuf_attrs[1] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[1] = std::make_shared<ur::VertexInputAttribute>(
         1, ur::ComponentDataType::Float, 3, 12, 28
     );
-    vbuf_attrs[2] = std::make_shared<ur::VertexBufferAttribute>(
+    vbuf_attrs[2] = std::make_shared<ur::VertexInputAttribute>(
         2, ur::ComponentDataType::UnsignedByte, 4, 24, 28
     );
 
