@@ -13,6 +13,9 @@ namespace ur
     class ShaderProgram;
     class VertexArray;
     struct RenderState;
+    class DescriptorSet;
+    class PipelineLayout;
+    class Pipeline;
 }
 
 namespace rp
@@ -25,8 +28,9 @@ public:
     RendererImpl(const ur::Device& dev);
 
 protected:
-    void FlushBuffer(ur::Context& ctx,  ur::PrimitiveType mode,
-        const ur::RenderState& rs, const std::shared_ptr<ur::ShaderProgram>& shader);
+    void FlushBuffer(ur::Context& ctx,  ur::PrimitiveType mode, const ur::RenderState& rs, 
+        const std::shared_ptr<ur::ShaderProgram>& shader, const std::shared_ptr<ur::DescriptorSet>& desc_set = nullptr,
+        const std::shared_ptr<ur::PipelineLayout>& pipeline_layout = nullptr, const std::shared_ptr<ur::Pipeline>& pipeline = nullptr);
 
 protected:
     RenderBuffer<VT, IT> m_buf;

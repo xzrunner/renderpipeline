@@ -42,7 +42,7 @@ RenderMgr::SetRenderer(const ur::Device& dev, ur::Context& ctx, RenderType type)
 			break;
 		case RenderType::SPRITE:
 			m_renderers[static_cast<int>(RenderType::SPRITE)]
-				= std::make_shared<SpriteRenderer>(dev);
+				= std::make_shared<SpriteRenderer>(dev, ctx);
 			break;
         case RenderType::MESH:
             m_renderers[static_cast<int>(RenderType::MESH)]

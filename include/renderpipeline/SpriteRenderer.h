@@ -10,6 +10,7 @@
 #include <boost/noncopyable.hpp>
 
 namespace tess { class Painter; class Palette; }
+namespace ur { class DescriptorSet; }
 
 namespace rp
 {
@@ -24,7 +25,7 @@ struct SpriteVertex
 class SpriteRenderer : public IRenderer, private RendererImpl<SpriteVertex, unsigned short>, private boost::noncopyable
 {
 public:
-	SpriteRenderer(const ur::Device& dev);
+	SpriteRenderer(const ur::Device& dev, const ur::Context& ctx);
 
 	virtual void Flush(ur::Context& ctx) override;
 
@@ -38,6 +39,8 @@ public:
 private:
 	void InitShader(const ur::Device& dev);
 
+	void InitRenderer(const ur::Device& dev, const ur::Context& ctx);
+
 private:
 	std::unique_ptr<tess::Palette> m_palette = nullptr;
 
@@ -45,6 +48,12 @@ private:
 
     ur::RenderState m_rs;
     std::shared_ptr<ur::Framebuffer> m_fbo = nullptr;
+
+	std::shared_ptr<ur::UniformBuffer> m_uniform_buf = nullptr;
+	std::shared_ptr<ur::DescriptorSet> m_desc_set = nullptr;
+
+	std::shared_ptr<ur::PipelineLayout> m_pipeline_layout = nullptr;
+	std::shared_ptr<ur::Pipeline>       m_pipeline        = nullptr;
 
 }; // SpriteRenderer
 

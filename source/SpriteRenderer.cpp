@@ -4,6 +4,8 @@
 #include "renderpipeline/UniformNames.h"
 
 #include <SM_Rect.h>
+#include <sm_const.h>
+#include <SM_Matrix.h>
 #include <tessellation/Painter.h>
 #include <tessellation/Palette.h>
 #include <painting0/ModelMatUpdater.h>
@@ -15,6 +17,9 @@
 #include <unirender/Texture.h>
 #include <unirender/TextureTarget.h>
 #include <unirender/Factory.h>
+#include <unirender/Descriptor.h>
+#include <unirender/Adaptor.h>
+#include <unirender/UniformBuffer.h>
 #include <shadertrans/ShaderTrans.h>
 #include <shaderweaver/typedef.h>
 #include <shaderweaver/Evaluator.h>
@@ -50,66 +55,19 @@ void copy_vertex_buffer(const sm::mat4& mat, rp::RenderBuffer<rp::SpriteVertex, 
 }
 
 const char* vs = R"(
-#version 450
-
-layout(location = 0) in vec2 position;
-layout(location = 1) in vec2 texcoord;
-layout(location = 2) in vec4 color;
-
-layout(std140) uniform MPV 
-{
-	mat4 model;
-	mat4 projection;
-	mat4 view;
-} u_mpv;
-
-//uniform mat4 u_model;
-//uniform mat4 u_projection;
-//uniform mat4 u_view;
-
-layout(location = 0) out vec4 v_color;
-layout(location = 1) out vec2 v_texcoord;
-
-void main()
-{
-	v_color = color;
-	v_texcoord = texcoord;
-
-	vec4 pos = u_mpv.projection * u_mpv.view * u_mpv.model * vec4(position, 0.0, 1.0);
-	gl_Position = pos;
-}
-)";
-
-const char* fs = R"(
-#version 450
-
-uniform sampler2D u_texture0;
-
-layout(location = 0) in vec4 v_color;
-layout(location = 1) in vec2 v_texcoord;
-
-layout(location = 0) out vec4 FragColor;
-
-void main()
-{
-	FragColor = texture(u_texture0, v_texcoord) * v_color;
-}
-)";
-
-const char* hlsl_vs = R"(
 
 struct VS_INPUT
 {
 	float2 position : POSITION;
 	float2 texcoord : TEXCOORD;
-	float4 color    : COLOR;
+	uint4  color    : COLOR;
 };
 
-cbuffer u_mpv
+cbuffer u_mvp
 {
 	float4x4 model;
-	float4x4 projection;
 	float4x4 view;
+	float4x4 projection;
 }
 
 struct VS_OUTPUT
@@ -126,17 +84,19 @@ VS_OUTPUT main(VS_INPUT IN)
 	OUT.color = IN.color;
 	OUT.texcoord = IN.texcoord;
 
-	OUT.position = mul(mul(mul(float4(IN.position, 0.0, 1.0), model), view), projection);
+    // for vulkan
+	//OUT.position = mul(mul(mul(float4(IN.position.x, -IN.position.y, 0.0, 1.0), model), view), projection);
+	OUT.position = mul(mul(mul(float4(IN.position.x, IN.position.y, 0.0, 1.0), model), view), projection);
 
 	return OUT;
 }
 
 )";
 
-const char* hlsl_fs = R"(
+const char* fs = R"(
 
-Texture2D ColorTexture;
-SamplerState ColorSampler;
+Texture2D ColorTexture : register(t1);
+SamplerState ColorSampler : register(s1);
 
 struct VS_OUTPUT
 {
@@ -153,28 +113,41 @@ float4 main(VS_OUTPUT IN) : SV_TARGET
 
 )";
 
+struct {
+	sm::mat4 model;
+	sm::mat4 view;
+	sm::mat4 projection;
+} ubo_vs;
+
 }
 
 namespace rp
 {
 
-SpriteRenderer::SpriteRenderer(const ur::Device& dev)
+SpriteRenderer::SpriteRenderer(const ur::Device& dev, const ur::Context& ctx)
     : RendererImpl(dev)
 {
-	InitShader(dev);
-
 	m_palette = std::make_unique<tess::Palette>(dev);
+
+	InitShader(dev);
+	InitRenderer(dev, ctx);
 
     m_rs = ur::DefaultRenderState2D();
 }
 
 void SpriteRenderer::Flush(ur::Context& ctx)
 {
+	// ubo
+	if (m_uniform_buf) {
+		m_uniform_buf->Update(&ubo_vs, sizeof(ubo_vs));
+	}
+
     ctx.SetTexture(0, m_tex);
 
     auto fbo = ctx.GetFramebuffer();
     ctx.SetFramebuffer(m_fbo);
-    FlushBuffer(ctx, ur::PrimitiveType::Triangles, m_rs, m_shaders[0]);
+    FlushBuffer(ctx, ur::PrimitiveType::Triangles, m_rs, m_shaders[0], 
+		m_desc_set, m_pipeline_layout, m_pipeline);
     ctx.SetFramebuffer(fbo);
 }
 
@@ -381,11 +354,9 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
     };
 
 	std::vector<unsigned int> _vs, _fs;
-	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::VertexShader, vs, _vs);
-	//shadertrans::ShaderTrans::GLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
 	try {
-		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, hlsl_vs, _vs);
-		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, hlsl_fs, _fs);
+		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::VertexShader, vs, _vs);
+		shadertrans::ShaderTrans::HLSL2SpirV(shadertrans::ShaderStage::PixelShader, fs, _fs);
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 		return;
@@ -397,14 +368,44 @@ void SpriteRenderer::InitShader(const ur::Device& dev)
 		m_shaders[0] = nullptr;
 		return;
 	}
+
+	//std::string vs_glsl, fs_glsl;
+	//shadertrans::ShaderTrans::SpirV2GLSL(shadertrans::ShaderStage::VertexShader, _vs, vs_glsl);
+	//shadertrans::ShaderTrans::SpirV2GLSL(shadertrans::ShaderStage::PixelShader, _fs, fs_glsl);
+	//printf("++++++++++++++++++ vs\n%s\n++++++++++++++++++ fs\n%s\n", vs_glsl.c_str(), fs_glsl.c_str());
+
     auto shader = dev.CreateShaderProgram(_vs, _fs);
 
-    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, "u_mpv.model"));
-    shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, "u_mpv.view"));
-    shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, "u_mpv.projection"));
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, "u_mvp.model", &ubo_vs.model));
+    shader->AddUniformUpdater(std::make_shared<pt2::ViewMatUpdater>(*shader, "u_mvp.view", &ubo_vs.view));
+    shader->AddUniformUpdater(std::make_shared<pt2::ProjectMatUpdater>(*shader, "u_mvp.projection", &ubo_vs.projection));
 
     m_shaders.resize(1);
     m_shaders[0] = shader;
+}
+
+void SpriteRenderer::InitRenderer(const ur::Device& dev, const ur::Context& ctx)
+{
+	m_uniform_buf = dev.CreateUniformBuffer(&ubo_vs, sizeof(ubo_vs));
+
+	std::vector<std::shared_ptr<ur::DescriptorSetLayout>> desc_layouts = { dev.GetDescriptorSetLayout("single_ubo_single_img") };
+	std::vector<ur::Descriptor> desc_descriptors = { { ur::DescriptorType::UniformBuffer, m_uniform_buf } };
+	auto tex = m_palette->GetTexture();
+	if (tex) {
+		desc_descriptors.push_back(ur::Descriptor(ur::DescriptorType::CombinedImageSampler, tex));
+	}
+	m_desc_set = dev.CreateDescriptorSet(*dev.GetDescriptorPool(), desc_layouts, desc_descriptors);
+
+	auto vert_buf = dev.CreateVertexBuffer(ur::BufferUsageHint::DynamicDraw, 0);
+	m_va->SetVertexBuffer(vert_buf);
+	m_va->SetVertexBufferAttrs({
+        std::make_shared<ur::VertexBufferAttribute>(0, ur::ComponentDataType::Float,        2,  0, 20),		// position
+        std::make_shared<ur::VertexBufferAttribute>(1, ur::ComponentDataType::Float,        2,  8, 20),		// texcoords
+		std::make_shared<ur::VertexBufferAttribute>(2, ur::ComponentDataType::UnsignedByte, 4, 16, 20)		// color
+    });
+
+	m_pipeline_layout = dev.GetPipelineLayout("single_ubo_single_img");
+	m_pipeline = ctx.CreatePipeline(false, true, *m_pipeline_layout, *vert_buf, *m_shaders[0]);
 }
 
 }
