@@ -60,7 +60,7 @@ struct VS_INPUT
 {
 	float2 position : POSITION;
 	float2 texcoord : TEXCOORD;
-	uint4  color    : COLOR;
+	float4 color    : COLOR;
 };
 
 cbuffer u_mvp
