@@ -76,12 +76,7 @@ void HeightfieldRenderer::DrawVertBuf(ur::Context& ctx, const pt3::WindowContext
 {
     assert(m_shaders.size() == 1);
 
-    ur::RenderState rs;
-    rs.facet_culling.enabled = false;
-    rs.depth_test.enabled = false;
-
     ur::DrawState ds;
-    ds.render_state = rs;
     ds.program      = m_shaders[0];
     ds.vertex_array = m_va;
 
