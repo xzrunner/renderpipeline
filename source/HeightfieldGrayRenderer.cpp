@@ -19,29 +19,36 @@ namespace
 
 const char* vs = R"(
 
-attribute vec4 position;
-attribute vec2 texcoord;
+#version 330 core
 
-uniform mat4 u_projection;
-uniform mat4 u_view;
-uniform mat4 u_model;
+layout (location = 0) in vec4 position;
+layout (location = 1) in vec2 texcoord;
 
-uniform vec2 u_inv_res;
+layout(std140) uniform UBO_VS
+{
+    mat4 projection;
+    mat4 view;
+    mat4 model;
+
+    vec2 inv_res;
+} ubo_vs;
 
 uniform sampler2D u_heightmap;
 
+out VS_OUT {
 #ifdef BUILD_NORMAL_MAP
-varying vec2 v_texcoord;
+    vec2  texcoord;
 #endif // BUILD_NORMAL_MAP
-varying vec3 v_fragpos;
-varying vec3 v_normal;
+    vec3  frag_pos;
+    vec3  normal;
+} vs_out;
 
 vec3 ComputeNormalCentralDifference(vec2 position, float heightExaggeration)
 {
-    float leftHeight = texture2D(u_heightmap, position - vec2(1.0, 0.0) * u_inv_res).r * heightExaggeration;
-    float rightHeight = texture2D(u_heightmap, position + vec2(1.0, 0.0) * u_inv_res).r * heightExaggeration;
-    float bottomHeight = texture2D(u_heightmap, position - vec2(0.0, 1.0) * u_inv_res).r * heightExaggeration;
-    float topHeight = texture2D(u_heightmap, position + vec2(0.0, 1.0) * u_inv_res).r * heightExaggeration;
+    float leftHeight = texture(u_heightmap, position - vec2(1.0, 0.0) * ubo_vs.inv_res).r * heightExaggeration;
+    float rightHeight = texture(u_heightmap, position + vec2(1.0, 0.0) * ubo_vs.inv_res).r * heightExaggeration;
+    float bottomHeight = texture(u_heightmap, position - vec2(0.0, 1.0) * ubo_vs.inv_res).r * heightExaggeration;
+    float topHeight = texture(u_heightmap, position + vec2(0.0, 1.0) * ubo_vs.inv_res).r * heightExaggeration;
     return normalize(vec3(leftHeight - rightHeight, 2.0, bottomHeight - topHeight));
 }
 
@@ -50,42 +57,49 @@ void main()
     const float h_scale = 0.2;
 
 	vec4 pos = position;
-	pos.y = texture2D(u_heightmap, texcoord).r * h_scale;
+	pos.y = texture(u_heightmap, texcoord).r * h_scale;
 
 #ifdef BUILD_NORMAL_MAP
-    v_texcoord = texcoord;
+    vs_out.texcoord = texcoord;
 #endif // BUILD_NORMAL_MAP
-    v_fragpos = vec3(u_model * pos);
-    v_normal = ComputeNormalCentralDifference(texcoord, 500);
+    vs_out.frag_pos = vec3(ubo_vs.model * pos);
+    vs_out.normal = ComputeNormalCentralDifference(texcoord, 500);
 
-	gl_Position = u_projection * u_view * u_model * pos;
+	gl_Position = ubo_vs.projection * ubo_vs.view * ubo_vs.model * pos;
 }
 
 )";
 
 const char* fs = R"(
 
+#version 330 core
+
 #ifdef BUILD_NORMAL_MAP
 uniform sampler2D u_normal_map;
-varying vec2 v_texcoord;
 #endif // BUILD_NORMAL_MAP
-varying vec3 v_fragpos;
-varying vec3 v_normal;
+
+in VS_OUT {
+#ifdef BUILD_NORMAL_MAP
+    vec2  texcoord;
+#endif // BUILD_NORMAL_MAP
+    vec3  frag_pos;
+    vec3  normal;
+} fs_in;
 
 void main()
 {
 //#ifdef BUILD_NORMAL_MAP
 //    // fixme
-//    //vec3 N = texture2D(u_normal_map, v_texcoord).rgb;
-//    vec3 N = normalize(texture2D(u_normal_map, v_texcoord).rgb);
+//    //vec3 N = texture(u_normal_map, fs_in.texcoord).rgb;
+//    vec3 N = normalize(texture(u_normal_map, fs_in.texcoord).rgb);
 //#else
-//    vec3 fdx = dFdx(v_fragpos);
-//    vec3 fdy = dFdy(v_fragpos);
+//    vec3 fdx = dFdx(fs_in.frag_pos);
+//    vec3 fdy = dFdy(fs_in.frag_pos);
 //    vec3 N = normalize(cross(fdx, fdy));
 //#endif // BUILD_NORMAL_MAP
-    vec3 N = v_normal;
+    vec3 N = fs_in.normal;
 
-    vec3 light_dir = normalize(vec3(0, 1000, 1000) - v_fragpos);
+    vec3 light_dir = normalize(vec3(0, 1000, 1000) - fs_in.frag_pos);
     float diff = max(dot(N, light_dir), 0.0);
     vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);
 	gl_FragColor = vec4(diffuse, 1.0);
@@ -140,7 +154,7 @@ void HeightfieldGrayRenderer::Setup(const ur::Device& dev, ur::Context& ctx,
     // update uniforms
     pt0::ShaderUniforms vals;
     sm::vec2 inv_res(1.0f / m_height_map->GetWidth(), 1.0f / m_height_map->GetHeight());
-    vals.AddVar("u_inv_res", pt0::RenderVariant(inv_res));
+    vals.AddVar("ubo_vs.inv_res", pt0::RenderVariant(inv_res));
     vals.Bind(*shader);
 }
 
@@ -188,9 +202,9 @@ void HeightfieldGrayRenderer::InitShader(const ur::Device& dev)
 #endif // BUILD_NORMAL_MAP
 
 
-    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, MODEL_MAT_NAME));
-    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, VIEW_MAT_NAME));
-    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, PROJ_MAT_NAME));
+    shader->AddUniformUpdater(std::make_shared<pt0::ModelMatUpdater>(*shader, "ubo_vs.model"));
+    shader->AddUniformUpdater(std::make_shared<pt3::ViewMatUpdater>(*shader, "ubo_vs.view"));
+    shader->AddUniformUpdater(std::make_shared<pt3::ProjectMatUpdater>(*shader, "ubo_vs.projection"));
 
     m_shaders.resize(1);
     m_shaders[0] = shader;
